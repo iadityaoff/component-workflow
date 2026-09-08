@@ -1,0 +1,155 @@
+
+> twentyfirst-clone@0.1.0 qa
+> node scripts/qa.cjs
+
+--- Starting 21st-Clone QA Gate ---
+[31m[ERROR] src/components/Toast.tsx:5 - Found emoji. Emojis are prohibited in production components. (Found: "✓")[0m
+[31m[ERROR] src/components/Toast.tsx:5 - Found emoji. Emojis are prohibited in production components. (Found: "✕")[0m
+[31m[ERROR] src/components/Toast.tsx:5 - Found emoji. Emojis are prohibited in production components. (Found: "⚠")[0m
+[31m[ERROR] src/components/previews/AllPreviews.tsx:592 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "ℹ")[0m
+[31m[ERROR] src/components/previews/AllPreviews.tsx:710 - Found emoji. Emojis are prohibited in production components. (Found: "📊")[0m
+[31m[ERROR] src/components/previews/AllPreviews.tsx:711 - Found emoji. Emojis are prohibited in production components. (Found: "🧩")[0m
+[31m[ERROR] src/components/previews/AllPreviews.tsx:712 - Found emoji. Emojis are prohibited in production components. (Found: "⚙")[0m
+[31m[ERROR] src/data/components.ts:162 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✓")[0m
+[31m[ERROR] src/data/components.ts:221 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/components.ts:221 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/components.ts:856 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "⚠")[0m
+[31m[ERROR] src/data/components.ts:882 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "ℹ")[0m
+[31m[ERROR] src/data/components.ts:1040 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✓")[0m
+[31m[ERROR] src/data/components.ts:1042 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✕")[0m
+[31m[ERROR] src/data/components.ts:1200 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "←")[0m
+[31m[ERROR] src/data/components.ts:1204 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/components.ts:1287 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "←")[0m
+[31m[ERROR] src/data/components.ts:1289 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/components.ts:162 - Found emoji. Emojis are prohibited in production components. (Found: "✓")[0m
+[31m[ERROR] src/data/components.ts:856 - Found emoji. Emojis are prohibited in production components. (Found: "⚠")[0m
+[31m[ERROR] src/data/components.ts:1040 - Found emoji. Emojis are prohibited in production components. (Found: "✓")[0m
+[31m[ERROR] src/data/components.ts:1042 - Found emoji. Emojis are prohibited in production components. (Found: "✕")[0m
+[31m[ERROR] src/data/components.ts:1173 - Found emoji. Emojis are prohibited in production components. (Found: "📁")[0m
+[31m[ERROR] src/data/registry/announcements.ts:34 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:142 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:185 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:409 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:450 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:545 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:952 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1047 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1079 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1198 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1278 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/announcements.ts:32 - Found emoji. Emojis are prohibited in production components. (Found: "🎉")[0m
+[31m[ERROR] src/data/registry/announcements.ts:163 - Found emoji. Emojis are prohibited in production components. (Found: "⚡")[0m
+[31m[ERROR] src/data/registry/announcements.ts:164 - Found emoji. Emojis are prohibited in production components. (Found: "🎨")[0m
+[31m[ERROR] src/data/registry/announcements.ts:165 - Found emoji. Emojis are prohibited in production components. (Found: "📦")[0m
+[31m[ERROR] src/data/registry/announcements.ts:166 - Found emoji. Emojis are prohibited in production components. (Found: "🔒")[0m
+[31m[ERROR] src/data/registry/announcements.ts:174 - Found emoji. Emojis are prohibited in production components. (Found: "🌸")[0m
+[31m[ERROR] src/data/registry/announcements.ts:213 - Found emoji. Emojis are prohibited in production components. (Found: "✨")[0m
+[31m[ERROR] src/data/registry/announcements.ts:288 - Found emoji. Emojis are prohibited in production components. (Found: "🚀")[0m
+[31m[ERROR] src/data/registry/announcements.ts:320 - Found emoji. Emojis are prohibited in production components. (Found: "✨")[0m
+[31m[ERROR] src/data/registry/announcements.ts:447 - Found emoji. Emojis are prohibited in production components. (Found: "⚡")[0m
+[31m[ERROR] src/data/registry/announcements.ts:447 - Found emoji. Emojis are prohibited in production components. (Found: "🎨")[0m
+[31m[ERROR] src/data/registry/announcements.ts:447 - Found emoji. Emojis are prohibited in production components. (Found: "📊")[0m
+[31m[ERROR] src/data/registry/announcements.ts:543 - Found emoji. Emojis are prohibited in production components. (Found: "✨")[0m
+[31m[ERROR] src/data/registry/announcements.ts:763 - Found emoji. Emojis are prohibited in production components. (Found: "🎯")[0m
+[31m[ERROR] src/data/registry/announcements.ts:787 - Found emoji. Emojis are prohibited in production components. (Found: "🚀")[0m
+[31m[ERROR] src/data/registry/announcements.ts:788 - Found emoji. Emojis are prohibited in production components. (Found: "💬")[0m
+[31m[ERROR] src/data/registry/announcements.ts:833 - Found emoji. Emojis are prohibited in production components. (Found: "🎉")[0m
+[31m[ERROR] src/data/registry/announcements.ts:857 - Found emoji. Emojis are prohibited in production components. (Found: "⚡")[0m
+[31m[ERROR] src/data/registry/announcements.ts:951 - Found emoji. Emojis are prohibited in production components. (Found: "🌈")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1097 - Found emoji. Emojis are prohibited in production components. (Found: "👩")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1097 - Found emoji. Emojis are prohibited in production components. (Found: "💻")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1098 - Found emoji. Emojis are prohibited in production components. (Found: "🎨")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1099 - Found emoji. Emojis are prohibited in production components. (Found: "🤖")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1106 - Found emoji. Emojis are prohibited in production components. (Found: "🎉")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1135 - Found emoji. Emojis are prohibited in production components. (Found: "🎁")[0m
+[31m[ERROR] src/data/registry/announcements.ts:1238 - Found emoji. Emojis are prohibited in production components. (Found: "✨")[0m
+[33m[WARN] src/data/registry/announcements.ts:37 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:64 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:90 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:209 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:250 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:262 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:317 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:325 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:347 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:375 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:436 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:443 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:510 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:547 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:575 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:598 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:676 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:704 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:739 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:892 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:923 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:930 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:973 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:982 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:1010 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:1071 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:1075 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:1112 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:1164 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:1191 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/announcements.ts:1220 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/batch-4-backgrounds.ts:79 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/batch-4-backgrounds.ts:157 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/batch-4-backgrounds.ts:173 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/batch-4-borders.ts:47 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/batch-4-shaders-texts.ts:67 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[31m[ERROR] src/data/registry/buttons.ts:23 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/buttons.ts:23 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/buttons.ts:32 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/buttons.ts:32 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[33m[WARN] src/data/registry/buttons.ts:94 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/buttons.ts:175 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/buttons.ts:206 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/buttons.ts:221 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/buttons.ts:276 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[31m[ERROR] src/data/registry/components.ts:183 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/missing-categories.ts:290 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:176 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:281 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:372 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:397 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:402 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✕")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:111 - Found emoji. Emojis are prohibited in production components. (Found: "📊")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:112 - Found emoji. Emojis are prohibited in production components. (Found: "⚙")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:113 - Found emoji. Emojis are prohibited in production components. (Found: "👥")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:114 - Found emoji. Emojis are prohibited in production components. (Found: "📦")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:151 - Found emoji. Emojis are prohibited in production components. (Found: "📧")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:151 - Found emoji. Emojis are prohibited in production components. (Found: "🔗")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:151 - Found emoji. Emojis are prohibited in production components. (Found: "💬")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:176 - Found emoji. Emojis are prohibited in production components. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:281 - Found emoji. Emojis are prohibited in production components. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:397 - Found emoji. Emojis are prohibited in production components. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/premium-batch-b.ts:402 - Found emoji. Emojis are prohibited in production components. (Found: "✕")[0m
+[33m[WARN] src/data/registry/premium-batch-b.ts:119 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:102 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "→")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:119 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "↑")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:240 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "⚠")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:269 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✕")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:291 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✕")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:307 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:312 - Found decorative unicode glyph. Use a Lucide icon instead. (Found: "✕")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:81 - Found emoji. Emojis are prohibited in production components. (Found: "🔗")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:178 - Found emoji. Emojis are prohibited in production components. (Found: "✨")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:240 - Found emoji. Emojis are prohibited in production components. (Found: "⚠")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:269 - Found emoji. Emojis are prohibited in production components. (Found: "✕")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:291 - Found emoji. Emojis are prohibited in production components. (Found: "✕")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:307 - Found emoji. Emojis are prohibited in production components. (Found: "✓")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:312 - Found emoji. Emojis are prohibited in production components. (Found: "✕")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:433 - Found emoji. Emojis are prohibited in production components. (Found: "🏠")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:433 - Found emoji. Emojis are prohibited in production components. (Found: "📊")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:433 - Found emoji. Emojis are prohibited in production components. (Found: "👥")[0m
+[31m[ERROR] src/data/registry/style-generator.ts:433 - Found emoji. Emojis are prohibited in production components. (Found: "⚙")[0m
+[33m[WARN] src/data/registry/style-generator.ts:212 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/style-generator.ts:216 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/style-generator.ts:220 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+[33m[WARN] src/data/registry/style-generator.ts:288 - Found raw <svg> tag in registry. Use the <Icon /> primitive. (Found: "<svg")[0m
+
+--- Scan Summary ---
+100 errors, 46 warnings
+[31mQA Gate FAILED: Fix the errors above.[0m
