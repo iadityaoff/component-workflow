@@ -8,10 +8,15 @@ import {
   HeroGradient, HeroMinimal, Testimonial, FeatureGrid, DropdownMenu, CodeBlock, TooltipDemo,
   AccordionDemo, CheckboxList, SelectCustom, DialogConfirm, NavBarPreview, SliderRange, ToastPreview,
   RadioGroup, SidebarNav, SignInPreview, SignUpPreview, FileUploadPreview, PaginationPreview,
-  TablePreview, FooterPreview, CalendarPreview
+  TablePreview, FooterPreview, CalendarPreview, ScrollHeroPreview, ShaderPreview, LiquidMetalPreview,
+  BentoGridPreview, AsciiArtPreview,
+  ShinyButtonPreview, TextureButtonPreview, EclipseButtonPreview, LetterSwapButtonPreview,
+  AppStoreButtonPreview, CompactMessageButtonsPreview, HeroUIButtonGroupPreview, NotificationButtonPreview,
+  FlowButtonPreview, SubtextButtonPreview, DashedButtonPreview, ButtonMatrixPreview,
+  SpotlightCardPreview, BorderBeamPreview, DockMenuPreview, TextShimmerPreview, MagneticButtonPreview
 } from './AllPreviews';
 
-const KIND_MAP: Record<PreviewKind, React.ComponentType> = {
+const KIND_MAP: Record<PreviewKind, React.ComponentType<{ full?: boolean }>> = {
   "button-primary":    PrimaryButton,
   "button-gradient":   GradientButton,
   "button-ghost":      GhostButton,
@@ -20,11 +25,28 @@ const KIND_MAP: Record<PreviewKind, React.ComponentType> = {
   "button-icon":       IconButtons,
   "button-loading":    LoadingButton,
   "button-sizes":      ButtonSizes,
+  "btn-shiny":         ShinyButtonPreview,
+  "btn-texture":       TextureButtonPreview,
+  "btn-eclipse":       EclipseButtonPreview,
+  "btn-letter-swap":   LetterSwapButtonPreview,
+  "btn-app-store":     AppStoreButtonPreview,
+  "btn-compact-msg":   CompactMessageButtonsPreview,
+  "btn-heroui-group":  HeroUIButtonGroupPreview,
+  "btn-notification-badge": NotificationButtonPreview,
+  "btn-flow":          FlowButtonPreview,
+  "btn-subtext":       SubtextButtonPreview,
+  "btn-dashed":        DashedButtonPreview,
+  "btn-matrix":        ButtonMatrixPreview,
+  "btn-magnetic":      MagneticButtonPreview,
   "card-pricing":      PricingCard,
   "card-stat":         StatCard,
   "card-product":      ProductCard,
   "card-user-profile": UserProfileCard,
   "card-notification": NotificationCard,
+  "spotlight-card":    SpotlightCardPreview,
+  "border-beam":       BorderBeamPreview,
+  "dock-menu":         DockMenuPreview,
+  "text-shimmer":      TextShimmerPreview,
   "input-search":      SearchField,
   "input-floating":    FloatingInput,
   "input-password":    PasswordInput,
@@ -62,12 +84,28 @@ const KIND_MAP: Record<PreviewKind, React.ComponentType> = {
   "table-simple":      TablePreview,
   "footer-simple":     FooterPreview,
   "calendar-mini":     CalendarPreview,
+  "scroll-hero":       ScrollHeroPreview,
+  "shader-visual":     ShaderPreview,
+  "liquid-metal":      LiquidMetalPreview,
+  "bento-grid":        BentoGridPreview,
+  "ascii-art":         AsciiArtPreview,
 };
 
 // Re-export so React.lazy gets a proper default export
-export default function PreviewMap({ kind }: { kind: PreviewKind }) {
-  const Component = KIND_MAP[kind] ?? Frame;
-  return <Component />;
+export default function PreviewMap({ kind, fullHeight = false }: { kind: PreviewKind; fullHeight?: boolean }) {
+  const Component = KIND_MAP[kind];
+  if (!Component) {
+    return (
+      <Frame fullHeight={fullHeight}>
+        <div className="text-center text-xs text-ink-400">Preview</div>
+      </Frame>
+    );
+  }
+  return (
+    <Frame fullHeight={fullHeight}>
+      <Component full={fullHeight} />
+    </Frame>
+  );
 }
 
 

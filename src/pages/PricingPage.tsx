@@ -1,174 +1,184 @@
 /**
- * Pricing Page — Three-tier pricing matching 21st.dev's model.
+ * Pricing Page
  */
-
-import { Check, Sparkles, Zap, Crown } from "lucide-react";
+import React from "react";
+import { Check, Sparkles, Zap, Building2 } from "lucide-react";
 import { Icon } from "../components/ui/Icon";
 import { MetaHead } from "../components/ui/MetaHead";
+import { useRoute } from "../lib/router";
 
 const PLANS = [
   {
-    name: "Free",
+    name: "Developer",
     price: "$0",
     period: "/mo",
-    description: "Perfect for trying out",
+    description: "Perfect for exploring components",
     icon: Sparkles,
     gradient: "from-sky-500 to-blue-500",
     features: [
-      "100 credits per month",
-      "Unlimited UI inspirations",
-      "Unlimited SVG logo searches",
-      "Community components",
+      "Browse full registry",
+      "Copy standard components",
+      "SVG icon search",
+      "5 Magic generates / mo",
       "Community support",
     ],
-    cta: "Get Started",
-    ctaStyle: "border border-ink-200 bg-white text-ink-900 hover:bg-ink-50 dark:border-ink-700 dark:bg-ink-900 dark:text-white dark:hover:bg-ink-800",
+    cta: "Get Started Free",
     featured: false,
   },
   {
     name: "Pro",
-    price: "$19",
+    price: "$29",
     period: "/mo",
-    description: "For professional developers",
+    description: "For professional frontend engineers",
     icon: Zap,
-    gradient: "from-violet-500 to-fuchsia-500",
+    gradient: "from-[var(--uf-accent)] to-indigo-500",
     features: [
-      "400 credits per month",
-      "Everything in Free",
-      "Clone site feature",
-      "Magic Generate (5 variants)",
-      "Priority support",
-      "Agent Registry publishing",
+      "Unlimited magic components",
+      "10 template downloads / mo",
+      "MCP server priority access",
+      "UIForge Creator dashboard",
+      "Advanced Design Bug Bot",
+      "Export theme CSS variables",
     ],
     cta: "Upgrade to Pro",
-    ctaStyle: "bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/20 hover:brightness-110",
     featured: true,
   },
   {
-    name: "Max",
-    price: "$49",
+    name: "Enterprise",
+    price: "$149",
     period: "/mo",
-    description: "For power users and teams",
-    icon: Crown,
-    gradient: "from-amber-500 to-orange-500",
+    description: "For agencies and large teams",
+    icon: Building2,
+    gradient: "from-emerald-500 to-teal-500",
     features: [
-      "2,000 credits per month",
       "Everything in Pro",
-      "Early access to new features",
-      "Custom MCP server configs",
-      "Team collaboration",
-      "Priority support",
-      "Revenue sharing for creators",
+      "Unlimited template downloads",
+      "Shared team workspaces",
+      "Custom MCP integrations",
+      "SSO & SAML authentication",
+      "Dedicated success manager",
     ],
-    cta: "Upgrade to Max",
-    ctaStyle: "border border-ink-200 bg-white text-ink-900 hover:bg-ink-50 dark:border-ink-700 dark:bg-ink-900 dark:text-white dark:hover:bg-ink-800",
+    cta: "Contact Sales",
     featured: false,
   },
 ];
 
 const FAQ = [
   {
-    q: "How does credit-based pricing work?",
-    a: "Each action (component generation, agent config export, magic generation) costs a certain number of credits. Basic searches are free and unlimited.",
+    q: "How does the Magic Component generator work?",
+    a: "The Magic generator uses AI to remix and build new variants of our components based on your prompt. Pro users get unlimited generations.",
   },
   {
-    q: "Can I cancel anytime?",
-    a: "Yes, you can cancel your subscription at any time. Your plan will remain active until the end of the billing period.",
+    q: "Can I use the templates for client work?",
+    a: "Yes! All templates you download on the Pro or Enterprise plans come with a commercial license allowing you to use them for client projects.",
   },
   {
-    q: "What happens when I run out of credits?",
-    a: "You can continue using free features like browsing and searching. Paid features will be available again when your credits refresh at the start of the next billing cycle.",
+    q: "What is the UIForge Creator Dashboard?",
+    a: "It's a suite of tools that allows you to publish your own components and templates to our marketplace and earn revenue from sales.",
   },
   {
-    q: "Do you offer team plans?",
-    a: "The Max plan supports team collaboration. For larger teams or enterprises, contact us for custom pricing.",
+    q: "Do you offer discounts for students or non-profits?",
+    a: "Yes, we offer a 50% discount on the Pro plan for verified students and non-profit organizations. Reach out to our support team.",
   },
 ];
 
 export function PricingPage() {
+  const { navigate } = useRoute();
+
   return (
-    <>
+    <div className="flex flex-col bg-[var(--uf-bg)] min-h-[calc(100vh-56px)] page-enter">
       <MetaHead
-        title="Pricing — Simple, Transparent Plans"
-        description="Start free, upgrade when you need more. Three plans designed for developers at every stage."
+        title="UIForge Pricing"
+        description="Simple, transparent pricing for frontend engineers and design teams."
       />
-      <div className="page-enter mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Hero */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Simple, transparent pricing.
-          </h1>
-          <p className="mx-auto mt-3 max-w-lg text-sm text-ink-500 dark:text-ink-400 sm:text-base">
-            Start free, upgrade when you need more.
-          </p>
+
+      <main className="flex-1">
+        {/* Header */}
+        <div className="border-b border-[var(--uf-border)] bg-[var(--uf-panel)] py-20 px-8 text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--uf-accent)]/5 to-transparent pointer-events-none" />
+          <div className="mx-auto max-w-3xl relative z-10">
+            <h1 className="text-4xl font-black tracking-tight text-[var(--uf-text)] sm:text-5xl">
+              Pricing for every stage
+            </h1>
+            <p className="mt-4 text-lg text-[var(--uf-text-secondary)] max-w-xl mx-auto">
+              Whether you're hacking on a side project or building enterprise software, we have a plan that fits your needs.
+            </p>
+          </div>
         </div>
 
-        {/* Pricing cards */}
-        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {PLANS.map((plan) => (
-            <div
-              key={plan.name}
-              className={[
-                "relative flex flex-col rounded-2xl border p-6 transition",
-                plan.featured
-                  ? "border-violet-500 bg-white shadow-xl shadow-violet-500/10 dark:bg-ink-950 scale-[1.02]"
-                  : "border-ink-200 bg-white dark:border-ink-800 dark:bg-ink-950",
-              ].join(" ")}
-            >
-              {plan.featured && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-3 py-1 text-[11px] font-semibold text-white">
-                  Most Popular
-                </span>
-              )}
-
-              <div className={`inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${plan.gradient} shadow-sm`}>
-                <Icon icon={plan.icon} size={20} className="text-white" />
-              </div>
-
-              <h3 className="mt-4 text-lg font-bold">{plan.name}</h3>
-              <p className="mt-1 text-xs text-ink-500 dark:text-ink-400">{plan.description}</p>
-
-              <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-4xl font-bold tracking-tight">{plan.price}</span>
-                <span className="text-sm text-ink-500">{plan.period}</span>
-              </div>
-
-              <ul className="mt-6 flex-1 space-y-3">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <Icon icon={Check} size={16} className="mt-0.5 shrink-0 text-emerald-500" />
-                    <span className="text-ink-600 dark:text-ink-300">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                className={[
-                  "mt-6 w-full rounded-lg px-4 py-2.5 text-sm font-medium transition active:scale-[0.98]",
-                  plan.ctaStyle,
-                ].join(" ")}
+        {/* Pricing Cards */}
+        <div className="mx-auto max-w-6xl px-8 py-20">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {PLANS.map((plan) => (
+              <div
+                key={plan.name}
+                className={`relative flex flex-col rounded-3xl p-8 transition-transform hover:-translate-y-1 ${
+                  plan.featured
+                    ? "bg-[var(--uf-panel-2)] border-2 border-[var(--uf-accent)] shadow-2xl shadow-[var(--uf-accent)]/10"
+                    : "bg-[var(--uf-panel)] border border-[var(--uf-border)]"
+                }`}
               >
-                {plan.cta}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* FAQ */}
-        <div className="mt-20">
-          <h2 className="text-center text-2xl font-bold">Frequently asked questions</h2>
-          <div className="mx-auto mt-8 max-w-2xl space-y-6">
-            {FAQ.map((item) => (
-              <div key={item.q} className="rounded-xl border border-ink-200 bg-white p-5 dark:border-ink-800 dark:bg-ink-950">
-                <h3 className="text-sm font-semibold">{item.q}</h3>
-                <p className="mt-2 text-sm text-ink-500 dark:text-ink-400 leading-relaxed">
-                  {item.a}
-                </p>
+                {plan.featured && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <span className="rounded-full bg-[var(--uf-accent)] px-4 py-1 text-xs font-bold text-white shadow-lg">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                
+                <div className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${plan.gradient} shadow-lg border border-white/10`}>
+                  <Icon icon={plan.icon} size={24} className="text-white" />
+                </div>
+                
+                <h3 className="text-xl font-bold text-[var(--uf-text)]">{plan.name}</h3>
+                <p className="mt-2 text-sm text-[var(--uf-text-secondary)] h-10">{plan.description}</p>
+                
+                <div className="my-6 flex items-baseline gap-2 border-b border-[var(--uf-border)] pb-8">
+                  <span className="text-4xl font-black tracking-tight text-[var(--uf-text)]">{plan.price}</span>
+                  <span className="text-sm font-semibold text-[var(--uf-text-muted)]">{plan.period}</span>
+                </div>
+                
+                <ul className="mb-8 flex-1 space-y-4">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3 text-sm font-medium text-[var(--uf-text-secondary)]">
+                      <div className="mt-0.5 rounded-full bg-[var(--uf-accent)]/10 p-1 text-[var(--uf-accent)] shrink-0">
+                        <Icon icon={Check} size={10} />
+                      </div>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                
+                <button
+                  onClick={() => navigate("#/signin")}
+                  className={`w-full rounded-xl py-3.5 px-4 text-sm font-bold transition ${
+                    plan.featured
+                      ? "bg-[var(--uf-accent)] text-white hover:bg-[var(--uf-accent-hover)] shadow-lg"
+                      : "bg-[var(--uf-panel-2)] border border-[var(--uf-border)] text-[var(--uf-text)] hover:bg-[var(--uf-panel)]"
+                  }`}
+                >
+                  {plan.cta}
+                </button>
               </div>
             ))}
           </div>
         </div>
-      </div>
-    </>
+
+        {/* FAQ */}
+        <div className="mx-auto max-w-4xl px-8 pb-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black text-[var(--uf-text)]">Frequently Asked Questions</h2>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            {FAQ.map((faq, i) => (
+              <div key={i} className="rounded-2xl border border-[var(--uf-border)] bg-[var(--uf-panel)] p-6">
+                <h3 className="text-base font-bold text-[var(--uf-text)]">{faq.q}</h3>
+                <p className="mt-3 text-sm text-[var(--uf-text-secondary)] leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

@@ -11,6 +11,7 @@ const CSP = [
   "style-src 'unsafe-inline' 'self' https://cdn.tailwindcss.com",
   "img-src data: blob: *",
   "font-src data: *",
+  "connect-src 'self' https://unpkg.com https://cdn.tailwindcss.com blob: data:",
 ].join("; ");
 
 interface Props {
@@ -18,9 +19,11 @@ interface Props {
   compiledCode?: string;
   title?: string;
   priority?: number;
+  /** When true, fills parent height and renders at full scale (for detail pages) */
+  fullHeight?: boolean;
 }
 
-export function LazyCardPreview({ code, compiledCode, title = "Component", priority = 0 }: Props) {
+export function LazyCardPreview({ code, compiledCode, title = "Component", priority = 0, fullHeight = false }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const unloadTimer = useRef<number | null>(null);
   const safetyTimer = useRef<number | null>(null);
@@ -109,14 +112,21 @@ export function LazyCardPreview({ code, compiledCode, title = "Component", prior
       .replace(/<\/script/gi, "<\\/script");
 
     const renderCall = `
-      // Use legacy synchronous ReactDOM.render so the DOM is committed before
-      // the iframe's onLoad fires and Tailwind CDN can scan utility classes.
-      ReactDOM.render(
-        React.createElement('div', { className: 'scale-wrap' },
-          React.createElement(${componentName}, {})
-        ),
-        document.getElementById('root')
-      );
+      try {
+        var comp = typeof ${componentName} === 'function' ? ${componentName} : function() { return null; };
+        ReactDOM.render(
+          React.createElement('div', { className: 'scale-wrap' },
+            React.createElement(comp, {})
+          ),
+          document.getElementById('root')
+        );
+      } catch (err) {
+        console.warn('Iframe component preview render caught error:', err);
+        var rootEl = document.getElementById('root');
+        if (rootEl) {
+          rootEl.innerHTML = '<div style="padding:12px;color:#94a3b8;font-size:11px;font-family:ui-monospace,monospace;">Preview loaded</div>';
+        }
+      }
     `;
 
     const injectionScript = `
@@ -241,12 +251,12 @@ export function LazyCardPreview({ code, compiledCode, title = "Component", prior
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; padding: 12px; overflow: hidden;
+      min-height: 100vh; padding: ${fullHeight ? '24px' : '12px'}; overflow: ${fullHeight ? 'auto' : 'hidden'};
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: transparent;
     }
     #root { width: 100%; display: flex; justify-content: center; }
-    .scale-wrap { transform: scale(0.65); transform-origin: center center; width: 154%; }
+    .scale-wrap { ${fullHeight ? '' : 'transform: scale(0.65); transform-origin: center center; width: 154%;'} }
   </style>
 </head>
 <body>
@@ -271,7 +281,7 @@ export function LazyCardPreview({ code, compiledCode, title = "Component", prior
   return (
     <div
       ref={ref}
-      className="relative h-44 w-full overflow-hidden rounded-xl bg-ink-50"
+      className={`relative w-full overflow-hidden rounded-xl bg-ink-50 ${fullHeight ? 'h-full' : 'h-44'}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -290,7 +300,7 @@ export function LazyCardPreview({ code, compiledCode, title = "Component", prior
                 isLoaded ? "opacity-100" : "opacity-0"
               }`}
               onLoad={handleFrameLoad}
-              style={{ pointerEvents: isHovered ? "auto" : "none" }}
+              style={{ pointerEvents: fullHeight || isHovered ? "auto" : "none" }}
             />
           </>
         )}

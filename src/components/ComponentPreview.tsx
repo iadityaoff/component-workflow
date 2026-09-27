@@ -1,22 +1,16 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import type { PreviewKind } from '../data/components';
+import PreviewMap from './previews/PreviewMap';
 
-// Dynamically target the chunk
-const PreviewMap = React.lazy(() => import('./previews/PreviewMap'));
-
-export function ComponentPreview({ kind }: { kind: PreviewKind }) {
+export function ComponentPreview({ kind, fullHeight = false }: { kind: PreviewKind; fullHeight?: boolean }) {
   return (
     <ErrorBoundary fallback={
-      <div className="preview-grid-bg flex h-44 w-full items-center justify-center overflow-hidden rounded-xl bg-ink-50 dark:bg-ink-900/60">
-        <span className="text-xs text-rose-500">Preview couldn't be loaded.</span>
+      <div className={`preview-grid-bg flex ${fullHeight ? "min-h-[380px]" : "h-44"} w-full items-center justify-center overflow-hidden rounded-xl bg-ink-50 dark:bg-ink-900/60`}>
+        <span className="text-xs text-rose-500">Preview unavailable</span>
       </div>
     }>
-      <Suspense fallback={
-        <div className="preview-grid-bg flex h-44 w-full items-center justify-center overflow-hidden rounded-xl bg-ink-50 dark:bg-ink-900/60 skeleton" />
-      }>
-        <PreviewMap kind={kind} />
-      </Suspense>
+      <PreviewMap kind={kind} fullHeight={fullHeight} />
     </ErrorBoundary>
   );
 }

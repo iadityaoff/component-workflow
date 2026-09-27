@@ -1,9 +1,7 @@
 /**
  * MCP Server Page — Installation instructions for IDE integration.
- * Modeled after 21st.dev/mcp with IDE-specific installation steps.
  */
-
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Search,
   Sparkles,
@@ -25,11 +23,11 @@ const IDE_CONFIGS: Record<IDE, { name: string; desc: string; config: string }> =
     desc: "AI-first code editor",
     config: `{
   "mcpServers": {
-    "21st-clone": {
+    "uiforge": {
       "command": "npx",
-      "args": ["-y", "@21st-clone/mcp@latest"],
+      "args": ["-y", "@uiforge/mcp@latest"],
       "env": {
-        "API_KEY": "<your-api-key>"
+        "UIFORGE_API_KEY": "<your-api-key>"
       }
     }
   }
@@ -40,11 +38,11 @@ const IDE_CONFIGS: Record<IDE, { name: string; desc: string; config: string }> =
     desc: "Agentic IDE",
     config: `{
   "mcpServers": {
-    "21st-clone": {
+    "uiforge": {
       "command": "npx",
-      "args": ["-y", "@21st-clone/mcp@latest"],
+      "args": ["-y", "@uiforge/mcp@latest"],
       "env": {
-        "API_KEY": "<your-api-key>"
+        "UIFORGE_API_KEY": "<your-api-key>"
       }
     }
   }
@@ -55,11 +53,11 @@ const IDE_CONFIGS: Record<IDE, { name: string; desc: string; config: string }> =
     desc: "Open source AI agent",
     config: `{
   "cline.mcpServers": {
-    "21st-clone": {
+    "uiforge": {
       "command": "npx",
-      "args": ["-y", "@21st-clone/mcp@latest"],
+      "args": ["-y", "@uiforge/mcp@latest"],
       "env": {
-        "API_KEY": "<your-api-key>"
+        "UIFORGE_API_KEY": "<your-api-key>"
       }
     }
   }
@@ -72,7 +70,7 @@ const TOOLS = [
     icon: Search,
     name: "Inspiration Search",
     desc: "Semantic search across thousands of components. Your agent automatically finds relevant UI examples and patterns before writing code — no manual browsing needed.",
-    gradient: "from-violet-500 to-blue-500",
+    gradient: "from-[var(--uf-accent)] to-indigo-500",
   },
   {
     icon: Image,
@@ -101,119 +99,135 @@ export function MCPPage() {
   }
 
   return (
-    <>
+    <div className="flex h-full min-h-[calc(100vh-56px)] flex-col bg-[var(--uf-bg)] page-enter">
       <MetaHead
-        title="MCP Server — IDE Integration"
-        description="Install our MCP server in Cursor, Windsurf, or VS Code for semantic component search, SVG icons, and magic generation right in your editor."
+        title="UIForge MCP Server"
+        description="Give your AI agents access to the UIForge registry directly in your IDE."
       />
-      <div className="page-enter mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-        {/* Hero */}
-        <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/20">
-            <Icon icon={Zap} size={28} className="text-white" />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden border-b border-[var(--uf-border)] bg-[var(--uf-panel)] py-20 px-8 text-center">
+          {/* Subtle gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--uf-accent)]/5 to-transparent pointer-events-none" />
+
+          <div className="mx-auto max-w-3xl relative z-10">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--uf-accent)] to-indigo-600 shadow-xl shadow-[var(--uf-accent)]/20 border border-white/10">
+              <Icon icon={Terminal} size={28} className="text-white" />
+            </div>
+
+            <h1 className="text-4xl font-black tracking-tight text-[var(--uf-text)] sm:text-5xl">
+              UIForge MCP Server
+            </h1>
+            <p className="mt-4 text-lg text-[var(--uf-text-secondary)]">
+              Give your AI agents (Cursor, Windsurf, Cline) direct access to the UIForge registry. Let them find components, icons, and inspiration automatically.
+            </p>
+
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <a
+                href="#install"
+                className="rounded-lg bg-[var(--uf-accent)] px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-[var(--uf-accent-hover)] transition"
+              >
+                Install Server
+              </a>
+              <a
+                href="https://github.com/uiforge/mcp"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg border border-[var(--uf-border)] bg-[var(--uf-panel-2)] px-6 py-3 text-sm font-bold text-[var(--uf-text)] hover:bg-[var(--uf-panel)] transition"
+              >
+                View on GitHub
+              </a>
+            </div>
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            MCP Server
-          </h1>
-          <p className="mx-auto mt-3 max-w-2xl text-sm text-ink-500 dark:text-ink-400 sm:text-base">
-            Install our MCP server in your favorite IDE and get semantic component search,
-            SVG icon lookup, and magic generation right where you code.
-          </p>
         </div>
 
-        {/* Tools */}
-        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {TOOLS.map((tool) => (
-            <div
-              key={tool.name}
-              className="rounded-xl border border-ink-200 bg-white p-6 transition hover:shadow-lg dark:border-ink-800 dark:bg-ink-950"
-            >
-              <div className={`inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br ${tool.gradient} shadow-sm`}>
-                <Icon icon={tool.icon} size={20} className="text-white" />
-              </div>
-              <h3 className="mt-4 text-sm font-semibold">{tool.name}</h3>
-              <p className="mt-2 text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
-                {tool.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* API Key */}
-        <div className="mt-12">
-          <h2 className="text-lg font-bold tracking-tight">
-            <span className="flex items-center gap-2">
-              <Icon icon={Key} size={20} className="text-amber-500" />
-              API Key
-            </span>
-          </h2>
-          <div className="mt-4 rounded-xl border border-ink-200 bg-surface-2 p-4 dark:border-ink-800">
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                readOnly
-                value="sk-21c-xxxxxxxxxxxxxxxxxxxx"
-                className="h-10 flex-1 rounded-lg border border-ink-200 bg-white px-3 font-mono text-sm dark:border-ink-700 dark:bg-ink-900"
-              />
-              <button className="rounded-lg bg-ink-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-ink-800 dark:bg-white dark:text-ink-900">
-                Generate Key
-              </button>
-            </div>
-            <p className="mt-2 text-xs text-ink-400">
-              Sign in to generate your API key. Free tier includes 100 requests/month.
+        {/* Tools Section */}
+        <div className="mx-auto max-w-5xl px-8 py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold text-[var(--uf-text)]">Agentic Capabilities</h2>
+            <p className="mt-2 text-sm text-[var(--uf-text-secondary)]">
+              What your AI agents can do once connected to UIForge.
             </p>
           </div>
-        </div>
 
-        {/* Install */}
-        <div className="mt-12">
-          <h2 className="text-lg font-bold tracking-tight">
-            <span className="flex items-center gap-2">
-              <Icon icon={Terminal} size={20} className="text-violet-500" />
-              Install
-            </span>
-          </h2>
-          <p className="mt-2 text-sm text-ink-500 dark:text-ink-400">
-            Select your IDE and follow the instructions below.
-          </p>
-
-          {/* IDE tabs */}
-          <div className="mt-6 flex gap-3">
-            {(Object.keys(IDE_CONFIGS) as IDE[]).map((ide) => (
-              <button
-                key={ide}
-                onClick={() => setActiveIDE(ide)}
-                className={[
-                  "rounded-lg border px-4 py-2.5 text-sm font-medium transition",
-                  activeIDE === ide
-                    ? "border-violet-500 bg-violet-50 text-violet-700 dark:border-violet-500 dark:bg-violet-950/40 dark:text-violet-300"
-                    : "border-ink-200 text-ink-600 hover:bg-ink-50 dark:border-ink-800 dark:text-ink-400 dark:hover:bg-ink-900",
-                ].join(" ")}
-              >
-                <span className="font-semibold">{IDE_CONFIGS[ide].name}</span>
-                <span className="ml-1.5 text-xs opacity-60">{IDE_CONFIGS[ide].desc}</span>
-              </button>
+          <div className="grid gap-8 md:grid-cols-3">
+            {TOOLS.map((t, i) => (
+              <div key={i} className="group relative rounded-2xl border border-[var(--uf-border)] bg-[var(--uf-panel)] p-6 card-hover">
+                <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${t.gradient} shadow-sm border border-white/10`}>
+                  <Icon icon={t.icon} size={20} className="text-white" />
+                </div>
+                <h3 className="mb-2 font-bold text-[var(--uf-text)]">{t.name}</h3>
+                <p className="text-sm leading-relaxed text-[var(--uf-text-muted)]">
+                  {t.desc}
+                </p>
+              </div>
             ))}
           </div>
+        </div>
 
-          {/* Config block */}
-          <div className="relative mt-4 overflow-hidden rounded-xl border border-ink-200 bg-ink-950 dark:border-ink-800">
-            <div className="flex items-center justify-between border-b border-ink-800 px-4 py-2">
-              <span className="text-xs font-medium text-ink-400">settings.json</span>
-              <button
-                onClick={copyConfig}
-                className="flex items-center gap-1 rounded-md bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white/80 transition hover:bg-white/20"
-              >
-                <Icon icon={copied ? Check : Copy} size={12} />
-                {copied ? "Copied" : "Copy"}
-              </button>
+        {/* Installation Section */}
+        <div id="install" className="border-t border-[var(--uf-border)] bg-[var(--uf-panel)] py-20">
+          <div className="mx-auto max-w-3xl px-8">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl font-bold text-[var(--uf-text)]">Quick Installation</h2>
+              <p className="mt-2 text-sm text-[var(--uf-text-secondary)]">
+                Add the server configuration to your IDE's MCP settings file.
+              </p>
             </div>
-            <pre className="overflow-x-auto p-4 text-sm leading-relaxed text-emerald-400 font-mono">
-              {IDE_CONFIGS[activeIDE].config}
-            </pre>
+
+            <div className="overflow-hidden rounded-xl border border-[var(--uf-border)] bg-[var(--uf-panel-2)] shadow-sm">
+              {/* Tabs */}
+              <div className="flex border-b border-[var(--uf-border)] bg-[var(--uf-panel)] overflow-x-auto scrollbar-none">
+                {(Object.entries(IDE_CONFIGS) as [IDE, typeof IDE_CONFIGS[IDE]][]).map(
+                  ([key, conf]) => (
+                    <button
+                      key={key}
+                      onClick={() => setActiveIDE(key)}
+                      className={`flex flex-col items-start gap-1 whitespace-nowrap px-6 py-4 text-sm transition ${
+                        activeIDE === key
+                          ? "border-b-2 border-[var(--uf-accent)] bg-white/[0.03] text-[var(--uf-text)]"
+                          : "border-b-2 border-transparent text-[var(--uf-text-muted)] hover:bg-white/[0.02] hover:text-[var(--uf-text)]"
+                      }`}
+                    >
+                      <span className="font-bold">{conf.name}</span>
+                      <span className="text-xs font-normal opacity-80">
+                        {conf.desc}
+                      </span>
+                    </button>
+                  )
+                )}
+              </div>
+
+              {/* Code block */}
+              <div className="relative group">
+                <div className="absolute right-4 top-4 z-10">
+                  <button
+                    onClick={copyConfig}
+                    className="flex items-center gap-1.5 rounded-md bg-white/10 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-white/20 transition backdrop-blur-md"
+                  >
+                    <Icon icon={copied ? Check : Copy} size={12} />
+                    {copied ? "Copied!" : "Copy code"}
+                  </button>
+                </div>
+                <pre className="overflow-x-auto p-6 text-sm leading-relaxed text-zinc-300 font-mono">
+                  <code>{IDE_CONFIGS[activeIDE].config}</code>
+                </pre>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-xl border border-amber-500/20 bg-amber-500/10 p-6 flex items-start gap-4">
+              <Icon icon={Key} size={20} className="text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold text-[var(--uf-text)]">API Key Required</h4>
+                <p className="mt-1 text-sm text-[var(--uf-text-secondary)]">
+                  You need an API key to access the MCP server. Go to your <a href="#/studio" className="text-[var(--uf-accent)] hover:underline font-medium">Settings</a> page to generate one.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

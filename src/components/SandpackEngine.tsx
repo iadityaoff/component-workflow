@@ -12,6 +12,8 @@ import { Icon as UIIcon } from "./ui/Icon";
 interface Props {
   code: string;
   showEditor?: boolean;
+  theme?: 'light' | 'dark';
+  showThemeToggle?: boolean;
 }
 
 function SandpackEngineFallback({ error }: FallbackProps) {
@@ -179,9 +181,11 @@ export default function App() {
 `;
 }
 
-export function SandpackEngine({ code, showEditor = false }: Props) {
+export function SandpackEngine({ code, showEditor = false, theme, showThemeToggle = false }: Props) {
   const [mounted, setMounted] = useState(false);
-  const [localTheme, setLocalTheme] = useState<'light' | 'dark'>('light');
+  const [internalTheme, setInternalTheme] = useState<'light' | 'dark'>('dark');
+
+  const currentTheme = theme ?? internalTheme;
 
   useLayoutEffect(() => {
     let frameId: number;
@@ -200,21 +204,24 @@ export function SandpackEngine({ code, showEditor = false }: Props) {
   return (
     <ErrorBoundary FallbackComponent={SandpackEngineFallback}>
       <div className="group relative w-full h-full overflow-hidden rounded-xl border border-ink-200 bg-white shadow-sm dark:border-ink-800 dark:bg-ink-950 flex flex-col">
-        {/* Local Theme Toggle */}
-        <button
-          onClick={() => setLocalTheme(t => t === 'light' ? 'dark' : 'light')}
-          className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-surface-1 border border-ink-100 shadow-sm backdrop-blur transition hover:bg-ink-50 dark:bg-ink-900/80 dark:border-ink-800 dark:hover:bg-ink-900 focus-visible:ring-2 focus-visible:ring-violet-500 outline-none"
-          title="Toggle component theme"
-        >
-          <UIIcon icon={localTheme === 'dark' ? Sun : Moon} size={16} />
-        </button>
+        {/* Local Theme Toggle - only when standalone */}
+        {showThemeToggle && (
+          <button
+            type="button"
+            onClick={() => setInternalTheme(t => t === 'light' ? 'dark' : 'light')}
+            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg bg-surface-1 border border-ink-100 shadow-sm backdrop-blur transition hover:bg-ink-50 dark:bg-ink-900/80 dark:border-ink-800 dark:hover:bg-ink-900 focus-visible:ring-2 focus-visible:ring-violet-500 outline-none"
+            title="Toggle component theme"
+          >
+            <UIIcon icon={currentTheme === 'dark' ? Sun : Moon} size={16} />
+          </button>
+        )}
 
         <SandpackProvider
-          key={localTheme}
+          key={currentTheme}
           template="react-ts"
           theme="auto"
           files={{
-            "/App.tsx": { code: getAppCode(localTheme === 'dark'), hidden: true },
+            "/App.tsx": { code: getAppCode(currentTheme === 'dark'), hidden: true },
             "/Component.tsx": { code, active: true },
           }}
           customSetup={{
@@ -224,6 +231,7 @@ export function SandpackEngine({ code, showEditor = false }: Props) {
             },
           }}
           options={{
+            initMode: "lazy",
             externalResources: [
               "https://cdn.tailwindcss.com",
               "https://unpkg.com/lucide@0.473.0/dist/umd/lucide.min.js",

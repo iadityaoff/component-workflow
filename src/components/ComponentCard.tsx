@@ -2,15 +2,19 @@ import React, { useState, memo } from "react";
 import type { ComponentItem } from "../data/components";
 import { CATEGORY_BY_SLUG } from "../data/categories";
 import { useRoute } from "../lib/router";
+import { useBookmarks } from "../lib/bookmarks";
+import { useToast } from "./Toast";
 import { LazyCardPreview } from "./LazyCardPreview";
 import {
   Check,
   Copy,
-  ExternalLink,
-  Eye,
+  Terminal,
   Heart,
+  Eye,
   Sparkles,
-  FileText,
+  Bookmark,
+  ChevronDown,
+  FileText
 } from "lucide-react";
 import { Icon } from "./ui/Icon";
 
@@ -20,109 +24,169 @@ interface Props {
 }
 
 function ComponentCardInner({ item, priority = 0 }: Props) {
-  const { navigate } = useRoute();
-  const [copied, setCopied] = useState<"code" | "prompt" | null>(null);
+  const { navigate, setQuery } = useRoute();
+  const { isSaved, toggleSave } = useBookmarks();
+  const { toast } = useToast();
+  const saved = isSaved(item.id);
+  const [copiedKind, setCopiedKind] = useState<string | null>(null);
+  const [promptMenuOpen, setPromptMenuOpen] = useState(false);
 
-  async function copy(e: React.MouseEvent, kind: "code" | "prompt") {
+  async function copyPrompt(e: React.MouseEvent, modifier?: string) {
     e.stopPropagation();
-    const text = kind === "code" ? item.code : item.prompt;
-    if (navigator?.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-      setCopied(kind);
-      window.setTimeout(() => setCopied(null), 1400);
+    let text = item.prompt;
+    if (modifier) {
+      text = `[Optimized for ${modifier}]\n\n${text}`;
     }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKind(modifier || "prompt");
+      toast("success", modifier ? `Prompt copied for ${modifier}!` : "Prompt copied!");
+      setTimeout(() => setCopiedKind(null), 1400);
+    } catch {
+      toast("error", "Failed to copy");
+    }
+    setPromptMenuOpen(false);
   }
 
   const category = CATEGORY_BY_SLUG[item.categorySlug];
 
   return (
     <article
-      className={[
-        "card-premium group flex flex-col overflow-hidden rounded-xl border border-ink-200 bg-white shadow-card cursor-pointer dark:border-ink-800 dark:bg-ink-950",
-        item.featured >= 9 ? "card-featured" : "",
-      ].join(" ")}
-      onClick={() => navigate(`#/component/${item.id}`)}
+      className="group relative flex flex-col overflow-hidden rounded-xl border border-[var(--uf-border)] bg-[var(--uf-panel)] card-hover transition cursor-pointer"
+      onClick={() => setQuery({ preview: item.id })}
+      onMouseLeave={() => setPromptMenuOpen(false)}
     >
-      <div className="p-3 pb-0">
-        <LazyCardPreview 
-          code={item.code} 
-          compiledCode={item.compiledCode} 
-          title={item.title} 
-          priority={priority} 
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col gap-3 p-4">
-        <header className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="truncate text-sm font-semibold text-ink-900 dark:text-white">
-              {item.title}
-            </h3>
-            <p className="mt-0.5 line-clamp-1 text-xs text-ink-500">
-              {item.description}
-            </p>
+      {/* ── Card Header: Author info + Bookmark ── */}
+      <div className="flex items-center justify-between px-3 pt-3 pb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div
+            className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[8px] font-bold text-white bg-gradient-to-br ${
+              item.author?.avatarColor || "bg-indigo-600"
+            }`}
+          >
+            {item.author?.avatarText || "U"}
           </div>
-          <button className="text-ink-400 hover:text-ink-900" onClick={e => e.stopPropagation()}>
-            <Icon icon={Heart} size={16} />
-          </button>
-        </header>
+          <span className="truncate text-xs font-medium text-[var(--uf-text-secondary)] group-hover:text-[var(--uf-text)] transition">
+            {item.author?.name || "Anonymous"}
+          </span>
+        </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          {category && (
-            <span className="rounded-full bg-ink-100 px-2 py-0.5 text-[10px] font-medium text-ink-600">
-              {category.name}
+        <div className="flex items-center gap-1">
+          {item.featured >= 9 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-amber-500">
+              <Icon icon={Sparkles} size={10} />
+              Featured
             </span>
           )}
-          {item.tags.slice(0, 2).map(t => (
-            <span key={t} className="rounded-full border border-ink-100 px-2 py-0.5 text-[10px] text-ink-500">
-              {t}
-            </span>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mt-auto pt-2">
           <button
-            onClick={e => copy(e, 'code')}
-            className="flex h-8 items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white text-[11px] font-medium text-ink-700 hover:bg-ink-50"
+            type="button"
+            className={`grid h-6 w-6 place-items-center rounded-md transition ${
+              saved
+                ? "text-amber-500 bg-amber-500/10"
+                : "text-[var(--uf-text-muted)] hover:text-[var(--uf-text)] hover:bg-white/[0.06]"
+            }`}
+            onClick={(e) => {
+              e.stopPropagation();
+              const next = toggleSave(item.id);
+              toast(next ? "success" : "info", next ? "Saved" : "Removed");
+            }}
+            title={saved ? "Remove" : "Save"}
           >
-            <Icon icon={copied === 'code' ? Check : Copy} size={14} />
-            {copied === 'code' ? 'Copied' : 'Copy code'}
-          </button>
-          <button
-            onClick={e => copy(e, 'prompt')}
-            className="flex h-8 items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white text-[11px] font-medium text-ink-700 hover:bg-ink-50"
-          >
-            <Icon icon={copied === 'prompt' ? Check : FileText} size={14} />
-            {copied === 'prompt' ? 'Copied' : 'Copy prompt'}
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); navigate(`#/component/${item.id}`); }}
-            className="flex h-8 items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white text-[11px] font-medium text-ink-700 hover:bg-ink-50"
-          >
-            <Icon icon={ExternalLink} size={14} />
-            Open
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); navigate(`#/component/${item.id}`); }}
-            className="flex h-8 items-center justify-center gap-1.5 rounded-md bg-violet-600 text-[11px] font-medium text-white hover:bg-violet-700"
-          >
-            <Icon icon={Sparkles} size={14} />
-            Remix
+            <Icon icon={Bookmark} size={14} className={saved ? "fill-amber-500" : ""} />
           </button>
         </div>
+      </div>
 
-        <footer className="mt-1 flex items-center justify-between border-t border-ink-100 pt-3 text-[10px] text-ink-400">
-          <div className="flex items-center gap-2">
-            <span className={`h-5 w-5 rounded-full flex items-center justify-center text-white font-bold ${item.author.avatarColor}`}>
-              {item.author.avatarText}
-            </span>
-            <span>@{item.author.handle}</span>
+      {/* ── Preview Area ── */}
+      <div className="relative aspect-[4/3] w-full border-y border-[var(--uf-border)] bg-[var(--uf-panel-2)] preview-grid-bg">
+        <LazyCardPreview code={item.code} compiledCode={item.compiledCode} title={item.title} priority={priority} />
+
+        {/* Hover overlay actions */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+          <div className="pointer-events-auto flex gap-2 translate-y-2 group-hover:translate-y-0 transition-transform">
+            
+            <div className="relative">
+              <div className="inline-flex rounded-lg shadow-xl">
+                <button
+                  type="button"
+                  onClick={(e) => copyPrompt(e)}
+                  className="inline-flex items-center gap-1.5 rounded-l-lg bg-[var(--uf-accent)] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[var(--uf-accent-hover)] transition"
+                >
+                  <Icon icon={copiedKind === "prompt" ? Check : FileText} size={12} />
+                  <span>{copiedKind === "prompt" ? "Copied" : "Prompt"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPromptMenuOpen(!promptMenuOpen);
+                  }}
+                  className="rounded-r-lg border-l border-white/20 bg-[var(--uf-accent)] px-1.5 py-1.5 text-white hover:bg-[var(--uf-accent-hover)] transition"
+                >
+                  <Icon icon={ChevronDown} size={12} />
+                </button>
+              </div>
+
+              {promptMenuOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 z-30 w-36 rounded-lg border border-[var(--uf-border)] bg-[var(--uf-panel)] p-1 shadow-xl">
+                  <button
+                    onClick={(e) => copyPrompt(e, "Claude")}
+                    className="w-full rounded px-2 py-1 text-left text-[10px] font-medium text-[var(--uf-text)] hover:bg-white/[0.06] transition"
+                  >
+                    Claude
+                  </button>
+                  <button
+                    onClick={(e) => copyPrompt(e, "Cursor")}
+                    className="w-full rounded px-2 py-1 text-left text-[10px] font-medium text-[var(--uf-text)] hover:bg-white/[0.06] transition"
+                  >
+                    Cursor
+                  </button>
+                  <button
+                    onClick={(e) => copyPrompt(e, "v0")}
+                    className="w-full rounded px-2 py-1 text-left text-[10px] font-medium text-[var(--uf-text)] hover:bg-white/[0.06] transition"
+                  >
+                    v0.dev
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`#/component/${item.id}`);
+              }}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 transition"
+              title="View details"
+            >
+              <Icon icon={Eye} size={12} />
+            </button>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><Icon icon={Heart} size={12} /> {item.likes}</span>
-            <span className="flex items-center gap-1"><Icon icon={Eye} size={12} /> {item.views}</span>
-          </div>
-        </footer>
+        </div>
+      </div>
+
+      {/* ── Card Footer ── */}
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-[13px] font-semibold text-[var(--uf-text)]">
+            {item.title}
+          </h3>
+          <p className="truncate text-[11px] text-[var(--uf-text-muted)]">
+            {category?.name || "Component"}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0 text-[11px] font-medium text-[var(--uf-text-muted)] tabular-nums">
+          <span className="flex items-center gap-1 group-hover:text-rose-400 transition-colors">
+            <Icon icon={Heart} size={11} className={saved ? "fill-rose-400 text-rose-400" : ""} />
+            {item.likes ?? 0}
+          </span>
+          <span className="flex items-center gap-1 group-hover:text-[var(--uf-text-secondary)] transition-colors">
+            <Icon icon={Eye} size={11} />
+            {item.views ?? 0}
+          </span>
+        </div>
       </div>
     </article>
   );

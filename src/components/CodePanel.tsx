@@ -17,33 +17,56 @@ interface Props {
   code: string;
   /** Language tag shown in the corner badge */
   lang?: string;
+  language?: string;
+  onCopy?: () => Promise<void> | void;
+  copied?: boolean;
 }
 
-export function CodePanel({ code, lang = "tsx" }: Props) {
-  const [copied, setCopied] = useState(false);
+const TAILWIND_CONFIG_SNIPPET = `/** @type {import('tailwindcss').Config} */
+module.exports = {
+  theme: {
+    extend: {
+      animation: {
+        shimmer: "shimmer 2s linear infinite",
+        "border-beam": "border-beam calc(var(--duration)*1s) infinite linear",
+      },
+      keyframes: {
+        shimmer: {
+          from: { backgroundPosition: "0 0" },
+          to: { backgroundPosition: "-200% 0" },
+        },
+      },
+    },
+  },
+  plugins: [],
+};`;
 
-  async function copy() {
+export function CodePanel({ code, lang, language, onCopy, copied: externalCopied }: Props) {
+  const currentLang = lang || language || "tsx";
+  const [activeFile, setActiveFile] = useState<"component" | "tailwind">("component");
+  const [internalCopied, setInternalCopied] = useState(false);
+  const copied = externalCopied ?? internalCopied;
+  const setCopied = setInternalCopied;
+  const [copiedDeps, setCopiedDeps] = useState(false);
+
+  const activeContent = activeFile === "component" ? code : TAILWIND_CONFIG_SNIPPET;
+
+  async function copy(text: string, isDeps = false) {
     try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1400);
+      await navigator.clipboard.writeText(text);
+      if (isDeps) {
+        setCopiedDeps(true);
+        setTimeout(() => setCopiedDeps(false), 1400);
+      } else {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1400);
+      }
     } catch {
       /* fallback */
-      const ta = document.createElement("textarea");
-      ta.value = code;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "absolute";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1400);
     }
   }
 
-  const lines = code.split("\n");
+  const lines = activeContent.split("\n");
 
   const renderedLines = useMemo(() => {
     return lines.map((line, i) => {
@@ -64,17 +87,54 @@ export function CodePanel({ code, lang = "tsx" }: Props) {
   }, [lines]);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-ink-800 bg-ink-950 shadow-sm">
-      {/* Top bar */}
-      <div className="flex items-center justify-between border-b border-ink-800 px-4 py-2 bg-ink-900/50">
+    <div className="relative overflow-hidden rounded-2xl border border-ink-800 bg-[#0c0d12] text-white shadow-xl font-mono">
+      {/* Top File Tabs Bar */}
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 bg-[#141620]">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-500/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
+          <span className="h-3 w-3 rounded-full bg-rose-500/80 inline-block" />
+          <span className="h-3 w-3 rounded-full bg-amber-500/80 inline-block" />
+          <span className="h-3 w-3 rounded-full bg-emerald-500/80 inline-block" />
+
+          {/* File switcher tabs */}
+          <div className="ml-3 flex items-center gap-1 font-sans text-xs">
+            <button
+              type="button"
+              onClick={() => setActiveFile("component")}
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                activeFile === "component"
+                  ? "bg-white/15 text-white"
+                  : "text-white/50 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              Component.tsx
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveFile("tailwind")}
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                activeFile === "tailwind"
+                  ? "bg-white/15 text-white"
+                  : "text-white/50 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              tailwind.config.ts
+            </button>
+          </div>
         </div>
-        <span className="rounded bg-ink-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-ink-400">
-          {lang}
-        </span>
+
+        <button
+          type="button"
+          onClick={() => copy(activeContent)}
+          className={[
+            "inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-sans font-semibold transition active:scale-95 cursor-pointer outline-none",
+            copied
+              ? "bg-emerald-500 text-white"
+              : "border border-white/15 bg-white/10 text-white hover:bg-white/20",
+          ].join(" ")}
+        >
+          <Icon icon={copied ? Check : Copy} size={13} />
+          <span>{copied ? "Copied!" : "Copy Code"}</span>
+        </button>
       </div>
 
       {/* Code area */}
@@ -84,27 +144,23 @@ export function CodePanel({ code, lang = "tsx" }: Props) {
         </pre>
       </div>
 
-      {/* Copy button */}
-      <button
-        type="button"
-        onClick={copy}
-        className={[
-          "absolute right-3 top-12 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition active:scale-95 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
-          copied
-            ? "border border-emerald-700 bg-emerald-950/60 text-emerald-300"
-            : "border border-ink-700 bg-ink-900/80 text-ink-300 hover:bg-ink-800 hover:text-white backdrop-blur-sm",
-        ].join(" ")}
-      >
-        {copied ? (
-          <>
-            <Icon icon={Check} size={14} /> Copied!
-          </>
-        ) : (
-          <>
-            <Icon icon={Copy} size={14} /> Copy
-          </>
-        )}
-      </button>
+      {/* Dependencies footer bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 bg-[#12131c] px-4 py-2.5 text-xs font-sans text-white/60">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-white/80">Peer Dependencies:</span>
+          <code className="rounded bg-white/10 px-2 py-0.5 text-[11px] font-mono text-emerald-400">
+            framer-motion lucide-react clsx tailwind-merge
+          </code>
+        </div>
+        <button
+          type="button"
+          onClick={() => copy("npm install framer-motion lucide-react clsx tailwind-merge", true)}
+          className="inline-flex items-center gap-1 rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-white/20 transition"
+        >
+          <Icon icon={copiedDeps ? Check : Copy} size={12} />
+          <span>{copiedDeps ? "Copied command" : "Copy install command"}</span>
+        </button>
+      </div>
     </div>
   );
 }

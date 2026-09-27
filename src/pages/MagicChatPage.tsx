@@ -232,7 +232,7 @@ export function MagicChatPage() {
               Semantic Registry Agent
             </div>
             <p className="mt-1.5 text-[11px] leading-relaxed text-ink-500 dark:text-ink-400">
-              Searches {ALL_COMPONENTS.length.toLocaleString()} real components by title, tags,
+              Searches {(ALL_COMPONENTS?.length ?? 0).toLocaleString()} real components by title, tags,
               category and description — no external LLM required.
             </p>
           </div>
@@ -348,7 +348,7 @@ export function MagicChatPage() {
                 </button>
               </form>
               <p className="mt-2 text-center text-[10px] text-ink-400 uppercase tracking-widest font-semibold">
-                Matches drawn from {ALL_COMPONENTS.length.toLocaleString()} curated components
+                Matches drawn from {(ALL_COMPONENTS?.length ?? 0).toLocaleString()} curated components
               </p>
             </div>
           </div>

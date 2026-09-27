@@ -12,23 +12,25 @@
 
 import type { LucideIcon } from "lucide-react";
 
-type IconSize = 10 | 12 | 13 | 14 | 15 | 16 | 18 | 20 | 24 | 28 | 32;
+type IconSize = 10 | 11 | 12 | 13 | 14 | 15 | 16 | 18 | 20 | 24 | 28 | 32 | 48 | number;
 
 interface IconProps {
   icon: LucideIcon;
   /** Pixel size (default 16) */
   size?: IconSize;
+  /** Stroke width (default 1.75) */
+  strokeWidth?: number;
   /** If provided: role="img" + aria-label; else aria-hidden */
   label?: string;
   className?: string;
 }
 
-export function Icon({ icon: I, size = 16, label, className = "" }: IconProps) {
+export function Icon({ icon: I, size = 16, strokeWidth = 1.75, label, className = "" }: IconProps) {
   return (
     <I
       width={size}
       height={size}
-      strokeWidth={1.75}
+      strokeWidth={strokeWidth}
       aria-hidden={label ? undefined : true}
       role={label ? "img" : undefined}
       aria-label={label}

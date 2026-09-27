@@ -23,6 +23,7 @@ interface Props {
   items: ComponentItem[];
   /** Optional container bounded height; default is window scroll */
   isWindowScroll?: boolean;
+  overrideCols?: number;
 }
 
 interface GridCoreProps {
@@ -120,8 +121,9 @@ function ContainerGrid({ items, cols, rowCount }: GridCoreProps) {
   );
 }
 
-export function ComponentGrid({ items, isWindowScroll = true }: Props) {
-  const cols = useResponsiveCols({ base: 1, md: 2, lg: 3, xl: 3 });
+export function ComponentGrid({ items, isWindowScroll = true, overrideCols }: Props) {
+  const responsiveCols = useResponsiveCols({ base: 1, md: 2, lg: 3, xl: 3 });
+  const cols = overrideCols ?? responsiveCols;
   const rowCount = Math.ceil(items.length / cols);
 
   if (items.length === 0) {

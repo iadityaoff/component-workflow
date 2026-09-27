@@ -5,10 +5,11 @@ import { Icon } from "./ui/Icon";
 export type SortKey = "featured" | "newest" | "popular";
 
 interface Props {
-  active: SortKey;
+  active?: SortKey;
+  current?: SortKey;
   onChange: (k: SortKey) => void;
   /** Total number of components currently in view, displayed alongside */
-  count: number;
+  count?: number;
   /** Right-aligned slot for view toggles, etc. (optional) */
   right?: React.ReactNode;
 }
@@ -24,8 +25,9 @@ const TABS: { key: SortKey; label: string; icon: LucideIcon }[] = [
  * Fixes B-25: Arrow key roving focus in tablist.
  * Fixes B-10: Used Lucide icons through Icon wrapper.
  */
-export function Tabs({ active, onChange, count, right }: Props) {
+export function Tabs({ active, current, onChange, count, right }: Props) {
   const tabsRef = useRef<(HTMLButtonElement | null)[]>([]);
+  const selectedKey = active ?? current ?? "featured";
 
   function handleKeyDown(e: React.KeyboardEvent, index: number) {
     let nextIndex = index;
@@ -40,7 +42,6 @@ export function Tabs({ active, onChange, count, right }: Props) {
 
     if (nextIndex !== index) {
       tabsRef.current[nextIndex]?.focus();
-      // Optionally auto-select on focus: onChange(TABS[nextIndex].key);
     }
   }
 
@@ -52,7 +53,7 @@ export function Tabs({ active, onChange, count, right }: Props) {
         className="inline-flex items-center gap-1 rounded-lg bg-ink-100 p-1 dark:bg-ink-900"
       >
         {TABS.map(({ key, label, icon }, i) => {
-          const isActive = active === key;
+          const isActive = selectedKey === key;
           return (
             <button
               key={key}
@@ -76,12 +77,14 @@ export function Tabs({ active, onChange, count, right }: Props) {
         })}
       </div>
 
-      <span className="text-sm text-ink-500 dark:text-ink-400">
-        <span className="font-medium text-ink-900 dark:text-ink-100 tabular-nums">
-          {count.toLocaleString()}
-        </span>{" "}
-        component{count === 1 ? "" : "s"}
-      </span>
+      {count !== undefined && (
+        <span className="text-sm text-ink-500 dark:text-ink-400">
+          <span className="font-medium text-ink-900 dark:text-ink-100 tabular-nums">
+            {(count ?? 0).toLocaleString()}
+          </span>{" "}
+          component{count === 1 ? "" : "s"}
+        </span>
+      )}
 
       {right && <div className="ml-auto">{right}</div>}
     </div>

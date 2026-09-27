@@ -9,12 +9,14 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Icon } from "./ui/Icon";
 
 interface Props {
-  page: number;       // 1-based
-  pageCount: number;  // total pages
+  page?: number;        // 1-based
+  currentPage?: number; // alias
+  pageCount?: number;   // total pages
+  totalPages?: number;  // alias
   onPageChange: (page: number) => void;
   /** Total items across all pages — shown as "Showing X–Y of Z". */
-  totalItems: number;
-  pageSize: number;
+  totalItems?: number;
+  pageSize?: number;
 }
 
 function buildPageWindow(page: number, pageCount: number): (number | "…")[] {
@@ -31,16 +33,28 @@ function buildPageWindow(page: number, pageCount: number): (number | "…")[] {
   return out;
 }
 
-export function Pagination({ page, pageCount, onPageChange, totalItems, pageSize }: Props) {
-  if (pageCount <= 1) return null;
+export function Pagination({
+  page,
+  currentPage,
+  pageCount,
+  totalPages,
+  onPageChange,
+  totalItems,
+  pageSize = 24,
+}: Props) {
+  const activePage = Math.max(1, page ?? currentPage ?? 1);
+  const count = Math.max(1, pageCount ?? totalPages ?? 1);
 
-  const windowed = buildPageWindow(page, pageCount);
-  const first = (page - 1) * pageSize + 1;
-  const last = Math.min(page * pageSize, totalItems);
+  if (count <= 1) return null;
+
+  const total = totalItems ?? count * pageSize;
+  const windowed = buildPageWindow(activePage, count);
+  const first = Math.min((activePage - 1) * pageSize + 1, total);
+  const last = Math.min(activePage * pageSize, total);
 
   const go = (target: number) => {
-    const clamped = Math.min(Math.max(1, target), pageCount);
-    if (clamped !== page) {
+    const clamped = Math.min(Math.max(1, target), count);
+    if (clamped !== activePage) {
       onPageChange(clamped);
       // Nudge to the top of the grid so the user doesn't stay at the
       // bottom of the previous page's content.
@@ -54,17 +68,17 @@ export function Pagination({ page, pageCount, onPageChange, totalItems, pageSize
       className="mt-8 flex flex-col items-center gap-3 border-t border-ink-100 pt-6 dark:border-ink-800/80 sm:flex-row sm:justify-between"
     >
       <p className="text-xs text-ink-500 dark:text-ink-400">
-        Showing <span className="font-medium text-ink-700 dark:text-ink-200">{first.toLocaleString()}</span>–
-        <span className="font-medium text-ink-700 dark:text-ink-200">{last.toLocaleString()}</span> of
-        <span className="font-medium text-ink-700 dark:text-ink-200"> {totalItems.toLocaleString()}</span>
+        Showing <span className="font-medium text-ink-700 dark:text-ink-200">{(first ?? 0).toLocaleString()}</span>–
+        <span className="font-medium text-ink-700 dark:text-ink-200">{(last ?? 0).toLocaleString()}</span> of
+        <span className="font-medium text-ink-700 dark:text-ink-200"> {(total ?? 0).toLocaleString()}</span>
       </p>
 
       <div className="flex items-center gap-1">
         <button
           type="button"
           aria-label="Previous page"
-          onClick={() => go(page - 1)}
-          disabled={page === 1}
+          onClick={() => go(activePage - 1)}
+          disabled={activePage === 1}
           className="inline-flex h-8 items-center gap-1 rounded-md border border-ink-200 bg-white px-2.5 text-xs font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-ink-800 dark:bg-ink-950 dark:text-ink-200 dark:hover:bg-ink-900"
         >
           <Icon icon={ChevronLeft} size={14} />
@@ -80,12 +94,12 @@ export function Pagination({ page, pageCount, onPageChange, totalItems, pageSize
             <button
               key={slot}
               type="button"
-              aria-current={slot === page ? "page" : undefined}
+              aria-current={slot === activePage ? "page" : undefined}
               aria-label={`Go to page ${slot}`}
               onClick={() => go(slot)}
               className={[
                 "min-w-[2rem] h-8 rounded-md px-2 text-xs font-medium transition",
-                slot === page
+                slot === activePage
                   ? "bg-ink-900 text-white dark:bg-white dark:text-ink-900"
                   : "border border-ink-200 bg-white text-ink-700 hover:bg-ink-50 dark:border-ink-800 dark:bg-ink-950 dark:text-ink-200 dark:hover:bg-ink-900",
               ].join(" ")}
@@ -98,8 +112,8 @@ export function Pagination({ page, pageCount, onPageChange, totalItems, pageSize
         <button
           type="button"
           aria-label="Next page"
-          onClick={() => go(page + 1)}
-          disabled={page === pageCount}
+          onClick={() => go(activePage + 1)}
+          disabled={activePage === count}
           className="inline-flex h-8 items-center gap-1 rounded-md border border-ink-200 bg-white px-2.5 text-xs font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-40 disabled:cursor-not-allowed dark:border-ink-800 dark:bg-ink-950 dark:text-ink-200 dark:hover:bg-ink-900"
         >
           Next

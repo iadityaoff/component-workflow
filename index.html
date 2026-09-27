@@ -1,20 +1,24 @@
 <!doctype html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>21st Clone — Community Components</title>
+    <title>UIForge — The Community Marketplace for React UI</title>
+    <meta name="description" content="Browse, preview, copy and install 12,000+ React components, themes, templates, icons and more. Built by real design engineers." />
+
+    <!-- Fonts: Instrument Serif (display), Geist/Inter (UI), Geist Mono / JetBrains Mono (code) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body class="h-full bg-white text-ink-900 antialiased dark:bg-ink-950 dark:text-ink-100">
+  <body class="h-full bg-[#0a0a0a] text-neutral-100 antialiased">
     <div id="root" class="h-full"></div>
     <script>
+      // Emergency error display if React fails to mount
       window.addEventListener('error', function(e) {
         if (document.getElementById('root').childElementCount === 0) {
           document.getElementById('root').innerHTML =

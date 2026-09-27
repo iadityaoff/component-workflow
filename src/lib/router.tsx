@@ -1,13 +1,32 @@
 /**
- * Minimal hash-based router + query param manager.
- * Fixes: B-05, B-07, B-16.
+ * UIForge Router — Hash-based router with query param manager.
  *
  * Routes:
- *   #/                <Icon icon={ArrowRight} size={16} /> home (grid)
- *   #/component/:id   <Icon icon={ArrowRight} size={16} /> detail
- *
- * Supports search params in the hash:
- *   #/component/foo?theme=dark&device=sm
+ *   #/                    → landing (home)
+ *   #/components          → components listing
+ *   #/components/s/:slug  → category page
+ *   #/components/featured → featured
+ *   #/components/newest   → newest weekly leaderboard
+ *   #/component/:id       → component detail
+ *   #/templates           → templates
+ *   #/themes              → themes
+ *   #/themes/editor       → theme editor
+ *   #/apps                → apps directory
+ *   #/icons               → icons browser
+ *   #/gradients           → gradients gallery
+ *   #/ascii               → ascii art
+ *   #/ai                  → AI generator
+ *   #/authors             → top authors
+ *   #/libraries           → component libraries
+ *   #/bookmarks           → bookmarks
+ *   #/studio              → creator studio
+ *   #/publish             → publish flow
+ *   #/pricing             → pricing page
+ *   #/mcp                 → CLI & MCP
+ *   #/design-bug-bot      → Design Bug Bot
+ *   #/signin              → sign in
+ *   #/dashboard           → legacy → studio
+ *   #/profile             → user profile
  */
 
 import {
@@ -20,10 +39,42 @@ import {
   type ReactNode,
 } from "react";
 
-interface Route {
-  page: "home" | "detail" | "magic" | "publish" | "dashboard" | "signin" | "agents" | "agent-detail" | "mcp" | "docs" | "pricing" | "blog";
+export interface Route {
+  page:
+    | "landing"
+    | "components"
+    | "components-featured"
+    | "components-newest"
+    | "home"
+    | "detail"
+    | "templates"
+    | "themes"
+    | "themes-editor"
+    | "apps"
+    | "icons"
+    | "gradients"
+    | "ascii"
+    | "ai"
+    | "authors"
+    | "libraries"
+    | "bookmarks"
+    | "studio"
+    | "publish"
+    | "pricing"
+    | "mcp"
+    | "design-bug-bot"
+    | "signin"
+    | "dashboard"
+    | "profile"
+    | "magic"
+    | "agents"
+    | "agent-detail"
+    | "docs"
+    | "blog";
   componentId?: string;
   agentId?: string;
+  categorySlug?: string;
+  weekId?: string;
 }
 
 interface RouterContext {
@@ -49,18 +100,79 @@ function parseHash(hash: string): { route: Route; query: Record<string, string> 
 
   const cleanPath = pathPart.replace(/\/$/, "");
 
-  let route: Route = { page: "home" };
+  let route: Route = { page: "landing" };
 
+  // Component detail
   const detailMatch = cleanPath.match(/^component\/(.+)$/);
+  // Agent detail
   const agentDetailMatch = cleanPath.match(/^agents\/(.+)$/);
+  // Category page: /components/s/:slug
+  const categoryMatch = cleanPath.match(/^(?:community\/)?components\/s\/([^/]+)$/);
+  // Legacy category route
+  const legacyCategoryMatch = cleanPath.match(/^category\/([^/]+)$/);
+  // Newest week: /components/newest/:weekId
+  const newestWeekMatch = cleanPath.match(/^components\/newest\/(.+)$/);
+
   if (detailMatch) {
     route = { page: "detail", componentId: detailMatch[1] };
+  } else if (categoryMatch) {
+    let slug = categoryMatch[1];
+    if (slug === "button") slug = "buttons";
+    query.cat = slug;
+    route = { page: "components", categorySlug: slug };
+  } else if (legacyCategoryMatch) {
+    let slug = legacyCategoryMatch[1];
+    if (slug === "button") slug = "buttons";
+    query.cat = slug;
+    route = { page: "components", categorySlug: slug };
+  } else if (newestWeekMatch) {
+    route = { page: "components-newest", weekId: newestWeekMatch[1] };
+  } else if (cleanPath === "components/newest") {
+    route = { page: "components-newest" };
+  } else if (cleanPath === "components/featured") {
+    route = { page: "components-featured" };
+  } else if (cleanPath === "" || cleanPath === "landing") {
+    if (query.cat || query.q) {
+      route = { page: "components" };
+    } else {
+      route = { page: "landing" };
+    }
+  } else if (cleanPath === "components" || cleanPath === "community/components" || cleanPath.startsWith("community/components/")) {
+    route = { page: "components" };
+  } else if (cleanPath === "templates" || cleanPath === "community/templates") {
+    route = { page: "templates" };
+  } else if (cleanPath === "themes/editor") {
+    route = { page: "themes-editor" };
+  } else if (cleanPath === "themes" || cleanPath === "community/themes") {
+    route = { page: "themes" };
+  } else if (cleanPath === "apps") {
+    route = { page: "apps" };
+  } else if (cleanPath === "icons") {
+    route = { page: "icons" };
+  } else if (cleanPath === "gradients" || cleanPath === "gradients/editor") {
+    route = { page: "gradients" };
+  } else if (cleanPath === "ascii") {
+    route = { page: "ascii" };
+  } else if (cleanPath === "ai") {
+    route = { page: "ai" };
+  } else if (cleanPath === "authors") {
+    route = { page: "authors" };
+  } else if (cleanPath === "libraries") {
+    route = { page: "libraries" };
+  } else if (cleanPath === "bookmarks") {
+    route = { page: "bookmarks" };
+  } else if (cleanPath === "studio" || cleanPath.startsWith("studio/")) {
+    route = { page: "studio" };
+  } else if (cleanPath === "profile" || cleanPath.startsWith("profile/")) {
+    route = { page: "profile" };
+  } else if (cleanPath === "design-bug-bot") {
+    route = { page: "design-bug-bot" };
   } else if (cleanPath === "agents") {
     route = { page: "agents" };
   } else if (agentDetailMatch && agentDetailMatch[1] !== "publish") {
     route = { page: "agent-detail", agentId: agentDetailMatch[1] };
   } else if (cleanPath === "agents/publish") {
-    route = { page: "agents" }; // Handle in agents page
+    route = { page: "agents" };
   } else if (cleanPath === "magic") {
     route = { page: "magic" };
   } else if (cleanPath === "publish") {
@@ -83,7 +195,7 @@ function parseHash(hash: string): { route: Route; query: Record<string, string> 
 }
 
 const Ctx = createContext<RouterContext>({
-  route: { page: "home" },
+  route: { page: "landing" },
   query: {},
   navigate: () => {},
   goHome: () => {},
@@ -103,7 +215,6 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const navigate = useCallback((to: string) => {
-    // Prevent direct assignment elsewhere by making this the only blessed way
     window.location.hash = to;
   }, []);
 
@@ -116,9 +227,7 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   const setQuery = useCallback(
     (update: Record<string, string>) => {
       const qs = new URLSearchParams();
-      // Keep existing
       Object.entries(query).forEach(([k, v]) => qs.set(k, v));
-      // Append new (or delete if empty)
       Object.entries(update).forEach(([k, v]) => {
         if (!v) qs.delete(k);
         else qs.set(k, v);

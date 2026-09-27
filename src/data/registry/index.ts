@@ -31,28 +31,32 @@ import { BATCH_1_BASE } from "./batch-1-base";
 import { BACKGROUND_VARIANTS } from "./batch-4-backgrounds";
 import { BORDER_VARIANTS } from "./batch-4-borders";
 import { SHADER_VARIANTS, TEXT_DISPLAY_VARIANTS } from "./batch-4-shaders-texts";
+import { GRADIENT_VARIANTS } from "./batch-5-gradients";
+import { ASCII_ART_VARIANTS } from "./batch-6-ascii-art";
+import { SIDEBAR_EXPANSION_VARIANTS } from "./batch-7-sidebar-expansion";
 import { GENERATED_VARIANTS } from "./generated-batch";
 import type { ComponentItem, Author } from "../components";
 
-function toAuthor(idx: number): Author {
-  return REGISTRY_AUTHORS[idx % REGISTRY_AUTHORS.length];
+function toAuthor(idx?: number): Author {
+  const i = typeof idx === "number" ? Math.max(0, idx) : 0;
+  return REGISTRY_AUTHORS[i % REGISTRY_AUTHORS.length] || REGISTRY_AUTHORS[0];
 }
 
 function toComponentItem(v: VariantSpec): ComponentItem {
   return {
     id: v.id,
-    title: v.title,
-    description: v.description,
-    categorySlug: v.categorySlug,
-    tags: v.tags,
-    code: v.code,
+    title: v.title || "Untitled Component",
+    description: v.description || "",
+    categorySlug: v.categorySlug || "buttons",
+    tags: Array.isArray(v.tags) ? v.tags : [],
+    code: v.code || "",
     compiledCode: v.compiledCode,
-    prompt: v.prompt,
-    previewKind: v.previewKind as ComponentItem["previewKind"],
-    featured: v.featured,
-    createdAt: v.createdAt,
-    likes: v.likes,
-    views: v.views,
+    prompt: v.prompt || "",
+    previewKind: (v.previewKind || "button-primary") as ComponentItem["previewKind"],
+    featured: typeof v.featured === "number" ? v.featured : 5,
+    createdAt: typeof v.createdAt === "number" ? v.createdAt : Date.now(),
+    likes: typeof v.likes === "number" ? v.likes : 0,
+    views: typeof v.views === "number" ? v.views : 0,
     author: toAuthor(v.authorIdx),
   };
 }
@@ -107,6 +111,9 @@ const ALL_SPECS: VariantSpec[] = [
   ...BORDER_VARIANTS,
   ...SHADER_VARIANTS,
   ...TEXT_DISPLAY_VARIANTS,
+  ...GRADIENT_VARIANTS,
+  ...ASCII_ART_VARIANTS,
+  ...SIDEBAR_EXPANSION_VARIANTS,
   ...GENERATED_VARIANTS,
 ];
 

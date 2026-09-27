@@ -1,31 +1,28 @@
 /**
- * Component Detail Page — Production Level.
- *
- * Features:
- *   • Breadcrumb navigation
- *   • Title + Author + Stats + Tags
- *   • Variant selector (same-category components as quick-switch chips)
- *   • Tabs: Preview / Code / Usage / Features
- *   • Actions: Copy Code / Copy Prompt / Open / Remix — all with toast feedback
- *   • Related components section
- *
- * Fixes:
- * B-10: Lucide Icon wrapper and focus states.
- * Tabs now accessible via button list.
+ * Component Detail Page — UIForge Redesign.
  */
 
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check, Copy, ExternalLink, Eye, Heart, Sparkles, FileText, Smartphone, Tablet, Monitor, MousePointer2, Settings, Zap, ArrowUp, XCircle, Paintbrush, Atom, Accessibility, Moon, Sun } from "lucide-react";
-import type { ComponentItem } from "../data/components";
-import { COMPONENT_BY_ID, ALL_COMPONENTS } from "../data/components";
+import { 
+  ArrowLeft, Check, Copy, ExternalLink, Eye, Heart, Sparkles, FileText, 
+  Smartphone, Tablet, Monitor, MousePointer2, Settings, Zap, ArrowUp, 
+  XCircle, Paintbrush, Atom, Accessibility, Moon, Sun, Bookmark, 
+  Terminal, RotateCcw, Maximize2, Minimize2, Flag, ChevronDown 
+} from "lucide-react";
+import { COMPONENT_BY_ID, ALL_COMPONENTS, type ComponentItem } from "../data/components";
 import { CATEGORY_BY_SLUG } from "../data/categories";
 import { useRoute } from "../lib/router";
+import { useBookmarks } from "../lib/bookmarks";
+import { triggerCliModal } from "../components/CliTerminalModal";
 import { useToast } from "../components/Toast";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { SandpackEngine } from "../components/SandpackEngine";
+import { LazyCardPreview } from "../components/LazyCardPreview";
+import { ComponentCard } from "../components/ComponentCard";
 import { CodePanel } from "../components/CodePanel";
 import { UsagePanel } from "../components/UsagePanel";
 import { RemixModal } from "../components/RemixModal";
+import { CopyPromptDropdown } from "../components/CopyPromptDropdown";
 import { Icon } from "../components/ui/Icon";
 import { MetaHead } from "../components/ui/MetaHead";
 
@@ -43,16 +40,16 @@ export function ComponentDetailPage({ componentId }: Props) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
         <MetaHead title="404 - Component Not Found" />
-        <p className="text-5xl font-bold text-ink-200 dark:text-ink-800">404</p>
-        <p className="mt-3 text-lg font-medium text-ink-600 dark:text-ink-400">
+        <p className="text-5xl font-bold text-[var(--uf-text)]">404</p>
+        <p className="mt-3 text-lg font-medium text-[var(--uf-text-secondary)]">
           Component not found
         </p>
         <button
           type="button"
-          onClick={() => navigate("#/")}
-          className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-ink-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-ink-800 dark:bg-white dark:text-ink-900 dark:hover:bg-ink-100 focus-visible:ring-2 focus-visible:ring-violet-500 outline-none"
+          onClick={() => navigate("#/components")}
+          className="mt-6 inline-flex items-center gap-1.5 rounded-lg bg-[var(--uf-panel)] border border-[var(--uf-border)] px-5 py-2 text-sm font-medium text-[var(--uf-text)] transition hover:bg-[var(--uf-border-hover)]"
         >
-          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
+          <Icon icon={ArrowLeft} size={14} />
           Back to components
         </button>
       </div>
@@ -66,26 +63,49 @@ export function ComponentDetailPage({ componentId }: Props) {
 
 function DetailView({ item }: { item: ComponentItem }) {
   const [activeTab, setActiveTab] = useState<DetailTab>("preview");
-  const [copied, setCopied] = useState<"code" | "prompt" | null>(null);
+  const [copied, setCopied] = useState<"code" | "prompt" | "cli" | null>(null);
   const [liked, setLiked] = useState(false);
+  const { isSaved, toggleSave } = useBookmarks();
+  const saved = isSaved(item.id);
   const [likeCount, setLikeCount] = useState(item.likes);
   const [isRemixOpen, setIsRemixOpen] = useState(false);
   const [viewport, setViewport] = useState<"mobile" | "tablet" | "desktop">("desktop");
-  const [previewTheme, setPreviewTheme] = useState<"light" | "dark">("light");
+  const [previewTheme, setPreviewTheme] = useState<"light" | "dark">("dark");
+  const [previewEngine, setPreviewEngine] = useState<"native" | "sandpack">("native");
+  const [previewKey, setPreviewKey] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [promptMenuOpen, setPromptMenuOpen] = useState(false);
+
   const { toast } = useToast();
   const { navigate } = useRoute();
-
   const category = CATEGORY_BY_SLUG[item.categorySlug];
 
-  async function copy(kind: "code" | "prompt") {
-    const text = kind === "code" ? item.code : item.prompt;
+  async function copy(kind: "code" | "prompt" | "cli", modifier?: string) {
+    let text = "";
+    if (kind === "code") {
+      text = item.code;
+    } else if (kind === "prompt") {
+      text = item.prompt;
+      if (modifier) {
+        text = `[Optimized for ${modifier}]\n\n${text}`;
+      }
+    } else if (kind === "cli") {
+      text = `npx uiforge add ${item.id}`;
+    }
+
     try {
       await navigator.clipboard.writeText(text);
     } catch {
       /* ignore */
     }
     setCopied(kind);
-    toast("success", kind === "code" ? "Code copied to clipboard!" : "Prompt copied to clipboard!");
+    const msg =
+      kind === "code"
+        ? "Code copied!"
+        : kind === "prompt"
+        ? `Prompt copied${modifier ? ` for ${modifier}` : ""}!`
+        : "CLI command copied!";
+    toast("success", msg);
     setTimeout(() => setCopied(null), 1400);
   }
 
@@ -96,23 +116,24 @@ function DetailView({ item }: { item: ComponentItem }) {
     toast(next ? "success" : "info", next ? "Component liked!" : "Like removed");
   }
 
-  // Same-category variants for switcher
-  const variants = useMemo(
-    () =>
-      ALL_COMPONENTS.filter(
-        (c) => c.categorySlug === item.categorySlug,
-      ).slice(0, 12),
-    [item.categorySlug],
-  );
+  function handleSave() {
+    const nextSaved = toggleSave(item.id);
+    toast(
+      nextSaved ? "success" : "info",
+      nextSaved ? "Saved to your bookmarks!" : "Removed from bookmarks"
+    );
+  }
 
-  // Related components — same category, excluding self
-  const related = useMemo(
-    () =>
-      ALL_COMPONENTS.filter(
-        (c) => c.categorySlug === item.categorySlug && c.id !== item.id,
-      ).slice(0, 4),
-    [item],
-  );
+  const related = useMemo(() => {
+    const sameCat = ALL_COMPONENTS.filter(
+      (c) => c.categorySlug === item.categorySlug && c.id !== item.id
+    );
+    if (sameCat.length >= 4) return sameCat.slice(0, 4);
+    const others = ALL_COMPONENTS.filter(
+      (c) => c.categorySlug !== item.categorySlug && c.id !== item.id
+    ).slice(0, 4 - sameCat.length);
+    return [...sameCat, ...others];
+  }, [item]);
 
   const TABS: { key: DetailTab; label: string }[] = [
     { key: "preview", label: "Preview" },
@@ -126,375 +147,241 @@ function DetailView({ item }: { item: ComponentItem }) {
       <MetaHead 
         title={item.title} 
         description={item.description}
-        canonical={window.location.origin + window.location.hash}
       />
-      <div className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
-      {/* Breadcrumb */}
-      <Breadcrumb
-        crumbs={[
-          { label: "Components", href: "#/" },
-          ...(category
-            ? [{ label: category.name, href: `#/?cat=${item.categorySlug}` }]
-            : []),
-          { label: item.title },
-        ]}
-      />
+      <div className="page-enter mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+        <Breadcrumb
+          crumbs={[
+            { label: "Components", href: "#/components" },
+            ...(category
+              ? [{ label: category.name, href: `#/components?cat=${item.categorySlug}` }]
+              : []),
+            { label: item.title },
+          ]}
+        />
 
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {item.title}
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-sm text-ink-500 dark:text-ink-400">
-            {item.description}
-          </p>
+        {/* Header */}
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between border-b border-[var(--uf-border)] pb-6">
+          <div className="min-w-0 space-y-2">
+            <h1 className="text-2xl font-black tracking-tight sm:text-3xl text-[var(--uf-text)]">
+              {item.title}
+            </h1>
+            <p className="max-w-2xl text-sm text-[var(--uf-text-secondary)] leading-relaxed">
+              {item.description}
+            </p>
 
-          {/* Author + Stats */}
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <span
-                className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-[11px] font-semibold text-white ${item.author.avatarColor}`}
-              >
-                {item.author.avatarText}
-              </span>
-              <div>
-                <p className="font-medium">{item.author.name}</p>
-                <p className="text-xs text-ink-500">@{item.author.handle}</p>
+            <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
+              <div className="flex items-center gap-2">
+                <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[9px] font-bold text-white bg-gradient-to-br ${item.author?.avatarColor || "bg-indigo-600"}`}>
+                  {item.author?.avatarText || "U"}
+                </span>
+                <div>
+                  <p className="font-semibold text-[var(--uf-text)]">{item.author?.name || "Anonymous"}</p>
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-4 text-xs text-ink-500 dark:text-ink-400 tabular-nums">
-              <span className="inline-flex items-center gap-1">
-                <Icon icon={Heart} size={14} />
-                {likeCount.toLocaleString()}
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <Icon icon={Eye} size={14} />
-                {item.views.toLocaleString()}
-              </span>
+              <div className="flex items-center gap-3 text-[var(--uf-text-muted)]">
+                <span className="flex items-center gap-1">
+                  <Icon icon={Heart} size={13} className="text-rose-500" />
+                  {(likeCount ?? 0).toLocaleString()}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Icon icon={Eye} size={13} />
+                  {(item.views ?? 0).toLocaleString()}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Tags */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {category && (
-              <span className="inline-flex items-center rounded-full bg-ink-100 px-2.5 py-0.5 text-xs font-medium text-ink-700 dark:bg-ink-800 dark:text-ink-300">
-                {category.name}
-              </span>
-            )}
-            {item.tags.map((t) => (
-              <span
-                key={t}
-                className="inline-flex items-center rounded-full border border-ink-200 px-2.5 py-0.5 text-xs text-ink-500 dark:border-ink-800 dark:text-ink-400"
-              >
-                {t}
-              </span>
-            ))}
+          {/* Action Bar */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            {/* Copy Prompt Dropdown */}
+            <CopyPromptDropdown item={item} />
+
+            {/* Save */}
+            <button
+              onClick={handleSave}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-medium transition ${
+                saved
+                  ? "bg-amber-500 text-white"
+                  : "border border-[var(--uf-border)] bg-[var(--uf-panel)] text-[var(--uf-text)] hover:bg-[var(--uf-border-hover)]"
+              }`}
+            >
+              <Icon icon={Bookmark} size={14} />
+              <span>{saved ? "Saved" : "Save"}</span>
+            </button>
+
+            {/* Remix */}
+            <button
+              onClick={() => setIsRemixOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--uf-border)] bg-[var(--uf-panel)] px-3.5 py-2 text-xs font-medium text-[var(--uf-text)] transition hover:bg-[var(--uf-border-hover)]"
+            >
+              <Icon icon={Sparkles} size={14} className="text-[var(--uf-accent)]" />
+              <span>Remix</span>
+            </button>
+
+            {/* CLI */}
+            <button
+              onClick={() => triggerCliModal(item.id, item.title)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--uf-border)] bg-[var(--uf-panel)] px-3.5 py-2 text-xs font-medium text-[var(--uf-text)] transition hover:bg-[var(--uf-border-hover)] hidden sm:flex"
+            >
+              <Icon icon={Terminal} size={14} />
+              <span>CLI</span>
+            </button>
           </div>
         </div>
 
-        {/* Like button */}
-        <button
-          type="button"
-          onClick={handleLike}
-          className={[
-            "flex items-center gap-2 self-start rounded-lg border px-4 py-2 text-sm font-medium transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400",
-            liked
-              ? "border-rose-300 bg-rose-50 text-rose-600 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-400"
-              : "border-ink-200 text-ink-700 hover:bg-ink-50 dark:border-ink-800 dark:text-ink-200 dark:hover:bg-ink-900",
-          ].join(" ")}
-        >
-          <Icon icon={Heart} size={16} />
-          {liked ? "Liked" : "Like"}
-        </button>
-      </div>
-
-      {/* ── Variant Selector ─────────────────────────────── */}
-      {variants.length > 1 && (
-        <div className="mt-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-ink-400">
-            Variants ({variants.length})
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {variants.map((v) => (
+        {/* Tabs & Tools */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-1 rounded-lg border border-[var(--uf-border)] bg-[var(--uf-panel)] p-1">
+            {TABS.map((tab) => (
               <button
-                key={v.id}
-                type="button"
-                onClick={() => navigate(`#/component/${v.id}`)}
-                className={[
-                  "rounded-lg border px-3 py-1.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
-                  v.id === item.id
-                    ? "border-ink-900 bg-ink-900 text-white dark:border-white dark:bg-white dark:text-ink-900"
-                    : "border-ink-200 text-ink-600 hover:bg-ink-50 dark:border-ink-800 dark:text-ink-400 dark:hover:bg-ink-900",
-                ].join(" ")}
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                  activeTab === tab.key
+                    ? "bg-white/[0.1] text-[var(--uf-text)] shadow-sm"
+                    : "text-[var(--uf-text-muted)] hover:text-[var(--uf-text)]"
+                }`}
               >
-                {v.title}
+                {tab.label}
               </button>
             ))}
           </div>
-        </div>
-      )}
 
-      {/* Tab bar */}
-      <div className="mt-8 flex items-center justify-between border-b border-ink-200 dark:border-ink-800">
-        <div className="flex gap-0" role="tablist">
-          {TABS.map(({ key, label }) => (
-            <button
-              key={key}
-              role="tab"
-              aria-selected={activeTab === key}
-              onClick={() => setActiveTab(key)}
-              className={[
-                "relative px-5 py-3 text-sm font-medium transition focus-visible:outline-none focus-visible:bg-ink-100 dark:focus-visible:bg-ink-800",
-                activeTab === key
-                  ? "text-ink-900 dark:text-white"
-                  : "text-ink-500 hover:text-ink-900 dark:text-ink-400 dark:hover:text-white",
-              ].join(" ")}
-            >
-              {label}
-              {activeTab === key && (
-                <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-ink-900 dark:bg-white" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Tab content */}
-      <div className="mt-6 animate-fade-in" key={activeTab}>
-        {activeTab === "preview" && (
-          <div className="overflow-hidden rounded-2xl border border-ink-200 dark:border-ink-800">
-            {/* ── Responsive Preview Toolbar ── */}
-            <div className="flex items-center justify-between border-b border-ink-100 bg-surface-2 px-4 py-2 dark:border-ink-800 dark:bg-ink-900/80">
-              <div className="flex items-center gap-1 rounded-lg bg-ink-100 p-0.5 dark:bg-ink-800">
-                {([
-                  { key: "mobile" as const, icon: Smartphone, label: "Mobile (360px)" },
-                  { key: "tablet" as const, icon: Tablet, label: "Tablet (768px)" },
-                  { key: "desktop" as const, icon: Monitor, label: "Desktop" },
-                ] as const).map(({ key, icon, label }) => (
+          {activeTab === "preview" && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 rounded-lg border border-[var(--uf-border)] bg-[var(--uf-panel)] p-1">
+                {(["mobile", "tablet", "desktop"] as const).map((v) => (
                   <button
-                    key={key}
-                    type="button"
-                    onClick={() => setViewport(key)}
-                    title={label}
-                    className={[
-                      "rounded-md p-1.5 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
-                      viewport === key
-                        ? "bg-white text-ink-900 shadow-sm dark:bg-ink-700 dark:text-white"
-                        : "text-ink-500 hover:text-ink-700 dark:text-ink-400 dark:hover:text-ink-200",
-                    ].join(" ")}
+                    key={v}
+                    onClick={() => setViewport(v)}
+                    className={`rounded p-1.5 transition ${
+                      viewport === v
+                        ? "bg-white/[0.1] text-[var(--uf-text)]"
+                        : "text-[var(--uf-text-muted)] hover:text-[var(--uf-text)]"
+                    }`}
                   >
-                    <Icon icon={icon} size={16} />
+                    <Icon
+                      icon={v === "mobile" ? Smartphone : v === "tablet" ? Tablet : Monitor}
+                      size={14}
+                    />
                   </button>
                 ))}
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-medium text-ink-400 tabular-nums">
-                  {viewport === "mobile" ? "360px" : viewport === "tablet" ? "768px" : "100%"}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPreviewTheme(previewTheme === "light" ? "dark" : "light")}
-                  title={`Switch to ${previewTheme === "light" ? "dark" : "light"} mode`}
-                  className="rounded-md border border-ink-200 p-1.5 text-ink-500 transition hover:bg-ink-50 dark:border-ink-700 dark:hover:bg-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-                >
-                  <Icon icon={previewTheme === "light" ? Moon : Sun} size={14} />
-                </button>
-              </div>
-            </div>
-            {/* ── Preview Container ── */}
-            <div className={`flex min-h-[400px] w-full items-center justify-center p-4 transition-colors duration-200 ${previewTheme === "dark" ? "bg-ink-950" : "bg-surface-1"}`}>
-              <div
-                className="w-full transition-all duration-300 ease-out"
-                style={{
-                  maxWidth: viewport === "mobile" ? 360 : viewport === "tablet" ? 768 : "100%",
-                  margin: "0 auto",
-                }}
+              <div className="h-4 w-px bg-[var(--uf-border)] mx-1" />
+              <button
+                onClick={() => setPreviewTheme(t => t === "dark" ? "light" : "dark")}
+                className="rounded-lg border border-[var(--uf-border)] bg-[var(--uf-panel)] p-2 text-[var(--uf-text-muted)] hover:text-[var(--uf-text)] transition"
               >
-                <SandpackEngine code={item.code} showEditor={false} />
-              </div>
+                <Icon icon={previewTheme === "dark" ? Sun : Moon} size={14} />
+              </button>
+              <button
+                onClick={() => setPreviewKey(k => k + 1)}
+                className="rounded-lg border border-[var(--uf-border)] bg-[var(--uf-panel)] p-2 text-[var(--uf-text-muted)] hover:text-[var(--uf-text)] transition"
+              >
+                <Icon icon={RotateCcw} size={14} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Content Area */}
+        <div className="rounded-xl border border-[var(--uf-border)] bg-[var(--uf-panel)] overflow-hidden min-h-[500px]">
+          {activeTab === "preview" && (
+            <div className={`relative h-[600px] w-full bg-[var(--uf-panel-2)] transition-colors ${
+              previewTheme === "light" ? "light bg-[#f8f9fa]" : "dark bg-[var(--uf-panel-2)]"
+            }`}>
+              {previewEngine === "sandpack" ? (
+                <SandpackEngine
+                  code={item.code}
+                  theme={previewTheme}
+                  key={`sp-${previewKey}`}
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center p-4">
+                  <div className="w-full transition-all duration-300 mx-auto preview-grid-bg rounded-xl border border-[var(--uf-border)] h-full"
+                    style={{
+                      maxWidth: viewport === "mobile" ? "375px" : viewport === "tablet" ? "768px" : "100%",
+                    }}
+                  >
+                    <LazyCardPreview
+                      code={item.code}
+                      compiledCode={item.compiledCode}
+                      title={item.title}
+                      priority={0}
+                      fullHeight
+                      key={`native-${previewKey}`}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "code" && (
+            <CodePanel
+              code={item.code}
+              language="tsx"
+              onCopy={() => copy("code")}
+              copied={copied === "code"}
+            />
+          )}
+
+          {activeTab === "usage" && (
+            <UsagePanel
+              item={item}
+            />
+          )}
+
+          {activeTab === "features" && (
+            <div className="p-6">
+              <ul className="space-y-4">
+                <li className="flex gap-3">
+                  <Icon icon={Accessibility} size={18} className="text-[var(--uf-accent)]" />
+                  <div>
+                    <h4 className="font-medium text-[var(--uf-text)]">Accessible</h4>
+                    <p className="text-sm text-[var(--uf-text-secondary)]">ARIA attributes and keyboard navigation supported.</p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <Icon icon={Monitor} size={18} className="text-[var(--uf-accent)]" />
+                  <div>
+                    <h4 className="font-medium text-[var(--uf-text)]">Responsive</h4>
+                    <p className="text-sm text-[var(--uf-text-secondary)]">Looks great on mobile, tablet, and desktop.</p>
+                  </div>
+                </li>
+                <li className="flex gap-3">
+                  <Icon icon={Moon} size={18} className="text-[var(--uf-accent)]" />
+                  <div>
+                    <h4 className="font-medium text-[var(--uf-text)]">Dark Mode</h4>
+                    <p className="text-sm text-[var(--uf-text-secondary)]">First-class support for Tailwind dark mode.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Related Components */}
+        {related.length > 0 && (
+          <div className="mt-16 pt-8 border-t border-[var(--uf-border)]">
+            <h2 className="text-lg font-bold text-[var(--uf-text)] mb-6">More like this</h2>
+            <div className="bordered-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {related.map((c) => (
+                <div key={c.id} className="p-3">
+                  <ComponentCard item={c} />
+                </div>
+              ))}
             </div>
           </div>
         )}
-
-        {activeTab === "code" && <CodePanel code={item.code} />}
-
-        {activeTab === "usage" && <UsagePanel item={item} />}
-
-        {activeTab === "features" && <FeaturesPanel item={item} />}
       </div>
 
-      {/* Action bar */}
-      <div className="mt-6 flex flex-wrap gap-2">
-        <ActionBtn
-          onClick={() => copy("code")}
-          label={copied === "code" ? "Copied!" : "Copy Code"}
-          icon={copied === "code" ? Check : Copy}
-          active={copied === "code"}
-        />
-        <ActionBtn
-          onClick={() => copy("prompt")}
-          label={copied === "prompt" ? "Copied!" : "Copy Prompt"}
-          icon={copied === "prompt" ? Check : FileText}
-          active={copied === "prompt"}
-        />
-        <ActionBtn
-          onClick={() =>
-            window.open(`#/component/${item.id}`, "_blank", "noopener")
-          }
-          label="Open in New Tab"
-          icon={ExternalLink}
-        />
-        <ActionBtn
-          onClick={() => setIsRemixOpen(true)}
-          label="Remix with AI"
-          icon={Sparkles}
-          gradient
-        />
-      </div>
-
-      {/* Remix Modal Overlay */}
-      <RemixModal 
-        isOpen={isRemixOpen} 
-        onClose={() => setIsRemixOpen(false)} 
-        component={item} 
+      <RemixModal
+        isOpen={isRemixOpen}
+        onClose={() => setIsRemixOpen(false)}
+        component={item}
       />
-
-      {/* Related components */}
-      {related.length > 0 && (
-        <RelatedSection items={related} />
-      )}
-      </div>
     </>
-  );
-}
-
-/* ---------- Features Panel ---------- */
-
-function FeaturesPanel({ item }: { item: ComponentItem }) {
-  const features = [
-    { label: "Dark mode support", value: item.code.includes("dark:"), icon: <Icon icon={Moon} size={18} /> },
-    { label: "Responsive design", value: item.code.includes("sm:") || item.code.includes("md:") || item.code.includes("lg:"), icon: <Icon icon={Smartphone} size={18} /> },
-    { label: "Hover interactions", value: item.code.includes("hover:"), icon: <Icon icon={MousePointer2} size={18} /> },
-    { label: "Focus states", value: item.code.includes("focus:"), icon: <Icon icon={Settings} size={18} /> },
-    { label: "Transition animations", value: item.code.includes("transition") || item.code.includes("animate"), icon: <Icon icon={Zap} size={18} /> },
-    { label: "Active states", value: item.code.includes("active:"), icon: <Icon icon={ArrowUp} size={18} /> },
-    { label: "Disabled states", value: item.code.includes("disabled"), icon: <Icon icon={XCircle} size={18} /> },
-    { label: "Custom colors", value: item.code.includes("gradient") || item.code.includes("bg-gradient"), icon: <Icon icon={Paintbrush} size={18} /> },
-    { label: "React state (interactive)", value: item.code.includes("useState"), icon: <Icon icon={Atom} size={18} /> },
-    { label: "Accessibility (ARIA)", value: item.code.includes("aria-"), icon: <Icon icon={Accessibility} size={18} /> },
-  ];
-
-  // Need a quick placeholder Moon import workaround:
-
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      {features.map((f) => (
-        <div
-          key={f.label}
-          className={[
-            "flex items-center gap-3 rounded-xl border p-4 transition",
-            f.value
-              ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
-              : "border-ink-100 bg-surface-1 dark:border-ink-800 dark:bg-ink-900/50",
-          ].join(" ")}
-        >
-          <span className="text-ink-600 dark:text-ink-300">{f.icon}</span>
-          <span className="flex-1 text-sm font-medium">{f.label}</span>
-          <span
-            className={[
-              "grid h-6 w-6 place-items-center rounded-full text-xs font-bold",
-              f.value
-                ? "bg-emerald-500 text-white"
-                : "bg-ink-100 text-ink-400 dark:bg-ink-800",
-            ].join(" ")}
-          >
-            {f.value ? <Icon icon={Check} size={12} /> : "—"}
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ---------- subcomponents ---------- */
-
-interface ActionBtnProps {
-  onClick: () => void;
-  label: string;
-  icon: any; // LucideIcon type alias bypass
-  active?: boolean;
-  gradient?: boolean;
-}
-
-function ActionBtn({
-  onClick,
-  label,
-  icon,
-  active,
-  gradient,
-}: ActionBtnProps) {
-  let cls: string;
-  if (active) {
-    cls =
-      "border border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400";
-  } else if (gradient) {
-    cls =
-      "border border-transparent bg-gradient-featured text-white shadow-sm shadow-rose-500/20 hover:brightness-110";
-  } else {
-    cls =
-      "border border-ink-200 bg-surface-1 text-ink-700 hover:bg-ink-50 dark:border-ink-800 dark:bg-ink-900 dark:text-ink-200 dark:hover:bg-ink-800";
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition active:scale-[0.97] outline-none focus-visible:ring-2 focus-visible:ring-violet-500",
-        cls,
-      ].join(" ")}
-    >
-      <Icon icon={icon} size={16} />
-      {label}
-    </button>
-  );
-}
-
-function RelatedSection({ items }: { items: ComponentItem[] }) {
-  const { navigate } = useRoute();
-
-  return (
-    <section className="mt-12 border-t border-ink-100 pt-8 dark:border-ink-800">
-      <h2 className="mb-5 text-lg font-semibold tracking-tight">
-        Related Components
-      </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {items.map((item) => {
-          const cat = CATEGORY_BY_SLUG[item.categorySlug];
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => navigate(`#/component/${item.id}`)}
-              className="group cursor-pointer text-left block w-full overflow-hidden rounded-xl border border-ink-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md dark:border-ink-800 dark:bg-ink-900 outline-none focus-within:ring-2 focus-within:ring-violet-500"
-            >
-              <div className="p-3 pb-0 pointer-events-none">
-                <div className="flex h-32 items-center justify-center rounded-lg bg-surface-2 dark:bg-ink-900/60 overflow-hidden">
-                  <SandpackEngine code={item.code} />
-                </div>
-              </div>
-              <div className="p-3">
-                <p className="truncate text-sm font-medium group-hover:text-rose-500 transition-colors">{item.title}</p>
-                <p className="mt-0.5 text-xs text-ink-500 dark:text-ink-400">
-                  {cat?.name}
-                </p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-    </section>
   );
 }

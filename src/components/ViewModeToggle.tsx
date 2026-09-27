@@ -9,11 +9,15 @@ import { Icon } from "./ui/Icon";
 export type ViewMode = "page" | "scroll";
 
 interface Props {
-  mode: ViewMode;
-  onChange: (mode: ViewMode) => void;
+  mode?: ViewMode;
+  viewMode?: ViewMode;
+  onChange?: (mode: ViewMode) => void;
+  setViewMode?: (mode: ViewMode) => void;
 }
 
-export function ViewModeToggle({ mode, onChange }: Props) {
+export function ViewModeToggle({ mode, viewMode, onChange, setViewMode }: Props) {
+  const currentMode = mode ?? viewMode ?? "page";
+  const handleChange = onChange ?? setViewMode ?? (() => {});
   return (
     <div
       role="radiogroup"
@@ -23,11 +27,11 @@ export function ViewModeToggle({ mode, onChange }: Props) {
       <button
         type="button"
         role="radio"
-        aria-checked={mode === "page"}
-        onClick={() => onChange("page")}
+        aria-checked={currentMode === "page"}
+        onClick={() => handleChange("page")}
         className={[
           "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 font-medium transition",
-          mode === "page"
+          currentMode === "page"
             ? "bg-ink-900 text-white dark:bg-white dark:text-ink-900"
             : "text-ink-500 hover:text-ink-800 dark:text-ink-400 dark:hover:text-ink-200",
         ].join(" ")}
@@ -38,11 +42,11 @@ export function ViewModeToggle({ mode, onChange }: Props) {
       <button
         type="button"
         role="radio"
-        aria-checked={mode === "scroll"}
-        onClick={() => onChange("scroll")}
+        aria-checked={currentMode === "scroll"}
+        onClick={() => handleChange("scroll")}
         className={[
           "inline-flex h-7 items-center gap-1.5 rounded-md px-2.5 font-medium transition",
-          mode === "scroll"
+          currentMode === "scroll"
             ? "bg-ink-900 text-white dark:bg-white dark:text-ink-900"
             : "text-ink-500 hover:text-ink-800 dark:text-ink-400 dark:hover:text-ink-200",
         ].join(" ")}

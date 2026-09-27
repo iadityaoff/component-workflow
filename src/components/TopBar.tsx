@@ -1,11 +1,27 @@
-import React from "react";
-import { Menu, Moon, Search, Sparkles, Sun } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Menu,
+  Moon,
+  Search,
+  Sun,
+  Bookmark,
+  Gem,
+  MessageSquare,
+  User,
+  Settings,
+  CreditCard,
+  LogOut,
+  Sparkles,
+  ChevronRight,
+  ExternalLink,
+} from "lucide-react";
 import { useTheme } from "../lib/theme";
+import { useBookmarks } from "../lib/bookmarks";
 import { useRoute } from "../lib/router";
 import { Icon } from "./ui/Icon";
-import { Kbd } from "./ui/Kbd";
 import { useAuth } from "../hooks/useAuth";
-import { Button } from "./ui/Button";
+import { useCopyQuota } from "../lib/quota";
+import { UpgradeDialog } from "./UpgradeDialog";
 
 interface Props {
   query: string;
@@ -14,212 +30,337 @@ interface Props {
 }
 
 /**
- * Sticky top bar with brand mark, global search, theme toggle and "Sign in".
- * Mobile: collapses search behind the menu, keeps the brand + theme + sign in.
+ * UIForge — Sticky top header (56px)
  *
- * Fixes:
- * B-04: Sign-in wired
- * B-07: Use navigate() instead of hrefs where applicable
- * B-10: Used Lucide icons through Icon wrapper
+ * Left: Logo + wordmark
+ * Center: Breadcrumb (e.g. Components / Hero)
+ * Right: Search ⌘K, Upgrade pill, Feedback, Bookmarks, Avatar
  */
 export function TopBar({ query, onQueryChange, onOpenMobileNav }: Props) {
   const { route, navigate } = useRoute();
+
   return (
-    <header className="sticky top-0 z-50 h-14 border-b border-ink-100 bg-surface-1/80 backdrop-blur supports-[backdrop-filter]:bg-surface-1/60 dark:border-ink-800/80">
-      <div className="flex h-full items-center gap-3 px-3 sm:px-4">
+    <header className="sticky top-0 z-50 h-14 border-b border-[var(--uf-border)] bg-[var(--uf-bg)]/95 backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--uf-bg)]/80">
+      <div className="flex h-full items-center gap-2 px-3 sm:px-4">
         {/* Mobile menu */}
         <button
           type="button"
           onClick={onOpenMobileNav}
-          className="-ml-1 inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-700 hover:bg-ink-100 lg:hidden dark:text-ink-200 dark:hover:bg-ink-900"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--uf-text-secondary)] hover:bg-white/[0.06] lg:hidden transition"
           aria-label="Open navigation"
         >
           <Icon icon={Menu} size={18} />
         </button>
 
-        {/* Brand */}
+        {/* Logo */}
         <button
           onClick={() => navigate("#/")}
-          className="flex cursor-pointer items-center gap-2 font-semibold tracking-tight p-0 border-none bg-transparent"
+          className="flex cursor-pointer items-center gap-2 border-none bg-transparent group shrink-0"
         >
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-ink-900 text-[11px] font-bold text-white shadow-sm dark:bg-white dark:text-ink-900">
-            21
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--uf-accent)] text-[10px] font-black tracking-tighter text-white shadow-sm transition group-hover:scale-105 group-hover:shadow-glow">
+            UF
+          </div>
+          <span className="hidden sm:inline font-bold tracking-tight text-sm text-[var(--uf-text)]">
+            UIForge
           </span>
-          <span className="hidden sm:inline">21st Clone</span>
         </button>
 
-        {/* Primary nav */}
-        <nav className="ml-2 hidden items-center gap-1 text-sm md:flex">
-          <NavLink
-            onClick={() => navigate("#/")}
-            active={route.page === "home"}
-          >
-            Components
-          </NavLink>
-          <NavLink
-            onClick={() => navigate("#/agents")}
-            active={route.page === "agents" || route.page === "agent-detail"}
-          >
-            Agents
-          </NavLink>
-          <NavLink
-            onClick={() => navigate("#/magic")}
-            active={route.page === "magic"}
-          >
-            Magic
-          </NavLink>
-          <NavLink
-            onClick={() => navigate("#/mcp")}
-            active={route.page === "mcp"}
-          >
-            MCP
-          </NavLink>
-          <NavLink
-            onClick={() => navigate("#/publish")}
-            active={route.page === "publish"}
-          >
-            Publish
-          </NavLink>
-          <NavLink
-            onClick={() => navigate("#/docs")}
-            active={route.page === "docs"}
-          >
-            Docs
-          </NavLink>
-        </nav>
+        {/* Breadcrumb */}
+        <Breadcrumb />
 
-        {/* Search */}
-        <div className="ml-auto hidden flex-1 max-w-md md:block">
-          <SearchField value={query} onChange={onQueryChange} />
-        </div>
+        {/* Spacer */}
+        <div className="flex-1" />
 
-        {/* Right side */}
-        <div className="ml-auto flex items-center gap-1.5 md:ml-2">
-          <button
-            onClick={() => navigate("#/magic")}
-            className="hidden h-9 items-center gap-1.5 rounded-lg bg-gradient-to-br from-fuchsia-500 via-rose-500 to-amber-400 px-3 text-sm font-semibold text-white shadow-sm shadow-rose-500/20 transition hover:brightness-110 active:scale-[0.98] sm:inline-flex"
-          >
-            <Icon icon={Sparkles} size={16} />
-            Magic
-          </button>
-          <ThemeToggle />
-          
+        {/* Right side actions */}
+        <div className="flex items-center gap-1">
+          <SearchButton />
+          <UpgradePill />
+          <FeedbackButton />
+          <BookmarksButton />
           <AuthSection />
         </div>
-      </div>
-
-      {/* Mobile-only search row */}
-      <div className="border-t border-ink-100 px-3 py-2 md:hidden dark:border-ink-800/80">
-        <SearchField value={query} onChange={onQueryChange} />
       </div>
     </header>
   );
 }
 
-function NavLink({
-  children,
-  onClick,
-  active,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  active?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-current={active ? "page" : undefined}
-      className={[
-        "rounded-md px-3 py-1.5 text-[13px] transition border-none bg-transparent cursor-pointer font-medium",
-        active
-          ? "bg-ink-100 text-ink-900 dark:bg-ink-900 dark:text-white"
-          : "text-ink-600 hover:bg-ink-100 hover:text-ink-900 dark:text-ink-400 dark:hover:bg-ink-900 dark:hover:text-white",
-      ].join(" ")}
-    >
-      {children}
-    </button>
-  );
-}
+/* ── Breadcrumb ── */
+function Breadcrumb() {
+  const { route, query } = useRoute();
+  const crumbs: { label: string; hash?: string }[] = [];
 
-import { REGISTRY_COUNT } from "../data/registry";
+  if (route.page === "components" || route.page === "home") {
+    crumbs.push({ label: "Components", hash: "#/components" });
+    if (query.cat) {
+      const name = query.cat.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      crumbs.push({ label: name });
+    }
+  } else if (route.page === "detail" && route.componentId) {
+    crumbs.push({ label: "Components", hash: "#/components" });
+    const title = route.componentId.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    crumbs.push({ label: title });
+  } else if (route.page === "templates") {
+    crumbs.push({ label: "Templates" });
+  } else if (route.page === "themes") {
+    crumbs.push({ label: "Themes" });
+  } else if (route.page === "magic") {
+    crumbs.push({ label: "AI" });
+  } else if (route.page === "pricing") {
+    crumbs.push({ label: "Pricing" });
+  } else if (route.page === "mcp") {
+    crumbs.push({ label: "CLI & MCP" });
+  } else if (route.page === "dashboard") {
+    crumbs.push({ label: "Creator Studio" });
+  } else if (route.page === "publish") {
+    crumbs.push({ label: "Publish" });
+  } else if (route.page === "landing") {
+    crumbs.push({ label: "Home" });
+  }
 
-function SearchField({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-}) {
+  if (crumbs.length === 0) return null;
+
   return (
-    <div className="relative">
-      <Icon
-        icon={Search}
-        size={16}
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-400"
-      />
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={`Search ${REGISTRY_COUNT}+ components…`}
-        className="h-9 w-full rounded-lg border border-ink-200 bg-ink-50 pl-9 pr-14 text-sm placeholder:text-ink-400 focus:border-violet-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-ink-800 dark:bg-ink-950 dark:placeholder:text-ink-500 dark:focus:border-violet-500 dark:focus:bg-ink-950 dark:focus:ring-violet-500/20"
-      />
-      <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
-        <Kbd>⌘K</Kbd>
-      </div>
+    <div className="hidden md:flex items-center gap-1 ml-3 text-[13px]">
+      {crumbs.map((crumb, i) => (
+        <React.Fragment key={i}>
+          {i > 0 && (
+            <Icon icon={ChevronRight} size={12} className="text-[var(--uf-text-muted)]" />
+          )}
+          {crumb.hash ? (
+            <a
+              href={crumb.hash}
+              className="text-[var(--uf-text-muted)] hover:text-[var(--uf-text)] transition truncate max-w-[120px]"
+            >
+              {crumb.label}
+            </a>
+          ) : (
+            <span className="text-[var(--uf-text-secondary)] font-medium truncate max-w-[180px]">
+              {crumb.label}
+            </span>
+          )}
+        </React.Fragment>
+      ))}
     </div>
   );
 }
 
-function ThemeToggle() {
-  const { theme, toggle } = useTheme();
+/* ── Search Button ── */
+function SearchButton() {
   return (
     <button
       type="button"
-      onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink-700 transition hover:bg-ink-100 dark:text-ink-200 dark:hover:bg-ink-900"
+      onClick={() => {
+        // Dispatch ⌘K event
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }));
+      }}
+      className="hidden sm:flex items-center gap-2 h-8 rounded-lg border border-[var(--uf-border)] bg-[var(--uf-panel)] px-3 text-xs text-[var(--uf-text-muted)] hover:border-[var(--uf-border-hover)] hover:text-[var(--uf-text-secondary)] transition"
     >
-      <Icon icon={theme === "dark" ? Sun : Moon} size={18} />
+      <Icon icon={Search} size={14} />
+      <span>Search</span>
+      <kbd className="ml-1 rounded border border-[var(--uf-border)] bg-[var(--uf-panel-2)] px-1.5 py-0.5 text-[10px] font-medium">
+        ⌘K
+      </kbd>
     </button>
   );
 }
 
+/* ── Upgrade Pill ── */
+function UpgradePill() {
+  const { navigate } = useRoute();
+  const { copiesUsed, maxFree, remainingCopies, isUpgradeOpen, openUpgradeModal, closeUpgradeModal } = useCopyQuota();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={openUpgradeModal}
+        title={`${copiesUsed} of ${maxFree} free copies used today.`}
+        className={`hidden md:flex items-center gap-1.5 h-7 rounded-full border px-2.5 text-[11px] font-semibold transition ${
+          remainingCopies === 0
+            ? "border-amber-500/30 bg-amber-500/15 text-amber-300 animate-pulse"
+            : "border-purple-500/20 bg-purple-500/[0.08] text-purple-400 hover:bg-purple-500/[0.14]"
+        }`}
+      >
+        <Icon icon={Gem} size={12} />
+        <span>{remainingCopies > 0 ? `${remainingCopies} free` : "Upgrade"}</span>
+      </button>
+
+      <UpgradeDialog
+        isOpen={isUpgradeOpen}
+        onClose={closeUpgradeModal}
+        copiesUsed={copiesUsed}
+      />
+    </>
+  );
+}
+
+/* ── Feedback Button ── */
+function FeedbackButton() {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+
+  return (
+    <div className="relative hidden md:block">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--uf-text-muted)] hover:bg-white/[0.06] hover:text-[var(--uf-text-secondary)] transition"
+        aria-label="Send feedback"
+      >
+        <Icon icon={MessageSquare} size={16} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-2 z-50 w-72 rounded-xl border border-[var(--uf-border)] bg-[var(--uf-panel)] p-3 shadow-xl animate-fade-in">
+            <h4 className="text-xs font-semibold text-[var(--uf-text)] mb-2">Send feedback</h4>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="What's on your mind?"
+              rows={3}
+              className="w-full rounded-md border border-[var(--uf-border)] bg-[var(--uf-bg)] px-3 py-2 text-xs text-[var(--uf-text)] placeholder:text-[var(--uf-text-muted)] focus:border-[var(--uf-accent)] focus:outline-none resize-none"
+            />
+            <div className="flex justify-end mt-2">
+              <button
+                onClick={() => { setOpen(false); setText(""); }}
+                className="rounded-md bg-[var(--uf-accent)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--uf-accent-hover)] transition"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Bookmarks Button ── */
+function BookmarksButton() {
+  const { openDrawer, savedComponents } = useBookmarks();
+  return (
+    <button
+      type="button"
+      onClick={openDrawer}
+      aria-label={`Saved components (${savedComponents.length})`}
+      className="relative inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--uf-text-muted)] hover:bg-white/[0.06] hover:text-[var(--uf-text-secondary)] transition"
+    >
+      <Icon
+        icon={Bookmark}
+        size={16}
+        className={savedComponents.length > 0 ? "text-[var(--uf-accent)] fill-[var(--uf-accent)]" : ""}
+      />
+      {savedComponents.length > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[var(--uf-accent)] px-0.5 text-[8px] font-bold text-white leading-none">
+          {savedComponents.length}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* ── Auth Section ── */
 function AuthSection() {
   const { user, loading } = useAuth();
   const { navigate } = useRoute();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { theme, toggle } = useTheme();
 
   if (loading) {
-    return <div className="h-9 w-20 animate-pulse rounded-lg bg-ink-100 dark:bg-ink-900" />;
+    return <div className="h-8 w-16 rounded-lg skeleton" />;
   }
 
   if (user) {
     return (
-      <button
-        onClick={() => navigate("#/dashboard")}
-        className="flex items-center gap-2 rounded-full border border-ink-200 bg-surface-1 p-0.5 pr-3 text-sm font-medium transition hover:bg-ink-50 dark:border-ink-800 dark:hover:bg-ink-900"
-      >
-        <div className="h-7 w-7 overflow-hidden rounded-full bg-gradient-to-br from-violet-500 to-rose-500">
-          {user.user_metadata.avatar_url ? (
-            <img src={user.user_metadata.avatar_url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-[10px] text-white">
-              {user.email?.slice(0, 2).toUpperCase()}
+      <div className="relative">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="flex items-center gap-2 rounded-full border border-[var(--uf-border)] bg-[var(--uf-panel)] p-0.5 pr-2.5 transition hover:border-[var(--uf-border-hover)]"
+        >
+          <div className="h-6 w-6 overflow-hidden rounded-full bg-gradient-to-br from-[var(--uf-accent)] to-purple-500">
+            {user.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-[9px] font-bold text-white">
+                {user.email?.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <span className="hidden sm:inline text-xs font-medium text-[var(--uf-text-secondary)]">
+            {user.user_metadata?.full_name || user.email?.split("@")[0]}
+          </span>
+        </button>
+
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 top-full mt-2 z-50 w-52 rounded-xl border border-[var(--uf-border)] bg-[var(--uf-panel)] p-1 shadow-xl animate-fade-in">
+              <MenuButton icon={User} label="Profile" onClick={() => { navigate("#/profile"); setMenuOpen(false); }} />
+              <MenuButton icon={Sparkles} label="Creator Studio" onClick={() => { navigate("#/studio"); setMenuOpen(false); }} />
+              <MenuButton icon={CreditCard} label="Billing" onClick={() => { navigate("#/pricing"); setMenuOpen(false); }} />
+              <div className="my-1 border-t border-[var(--uf-border)]" />
+              <MenuButton
+                icon={theme === "dark" ? Sun : Moon}
+                label={theme === "dark" ? "Light mode" : "Dark mode"}
+                onClick={toggle}
+              />
+              <div className="my-1 border-t border-[var(--uf-border)]" />
+              <MenuButton icon={LogOut} label="Sign out" onClick={() => setMenuOpen(false)} />
             </div>
-          )}
-        </div>
-        <span className="hidden sm:inline">{user.user_metadata.full_name || user.email?.split('@')[0]}</span>
-      </button>
+          </>
+        )}
+      </div>
     );
   }
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="h-9"
-      onClick={() => navigate("#/signin")}
+    <div className="flex items-center gap-1.5">
+      {/* Theme toggle for signed-out users */}
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--uf-text-muted)] hover:bg-white/[0.06] transition"
+      >
+        <Icon icon={theme === "dark" ? Sun : Moon} size={16} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => navigate("#/signin")}
+        className="px-2.5 py-1.5 text-xs font-medium text-[var(--uf-text-muted)] hover:text-[var(--uf-text)] transition"
+      >
+        Sign in
+      </button>
+      <button
+        type="button"
+        onClick={() => navigate("#/signin?mode=signup")}
+        className="rounded-lg bg-[var(--uf-accent)] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[var(--uf-accent-hover)] active:scale-[0.97]"
+      >
+        Sign up
+      </button>
+    </div>
+  );
+}
+
+/* ── Avatar Menu Button ── */
+function MenuButton({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: typeof User;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] text-[var(--uf-text-secondary)] hover:bg-white/[0.06] hover:text-[var(--uf-text)] transition"
     >
-      Sign in
-    </Button>
+      <Icon icon={icon} size={14} className="text-[var(--uf-text-muted)]" />
+      <span>{label}</span>
+    </button>
   );
 }

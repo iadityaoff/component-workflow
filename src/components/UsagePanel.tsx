@@ -20,15 +20,20 @@ interface Props {
 export function UsagePanel({ item }: Props) {
   return (
     <div className="space-y-8">
-      {/* Installation */}
-      <Section title="Installation">
-        <CopyBlock text="npm install @21st/ui" />
+      {/* CLI Installation */}
+      <Section title="CLI Installation (Recommended)">
+        <CopyBlock text={`npx 21st dev add ${item.id}`} />
+      </Section>
+
+      {/* Peer Dependencies */}
+      <Section title="Peer Dependencies">
+        <CopyBlock text="npm install framer-motion lucide-react clsx tailwind-merge" />
       </Section>
 
       {/* Import */}
       <Section title="Import">
         <CopyBlock
-          text={`import { ${extractExportName(item.code)} } from "@21st/ui";`}
+          text={`import { ${extractExportName(item.code)} } from "@/components/ui/${item.id}";`}
         />
       </Section>
 

@@ -1,12 +1,13 @@
 import { REGISTRY_COMPONENTS } from "./registry/index";
 
-export type CategoryGroupKey = "content" | "ui";
+export type CategoryGroupKey = "marketing" | "ui";
 
 export interface Category {
   slug: string;
   name: string;
   count: number;
   group: CategoryGroupKey;
+  isNew?: boolean;
 }
 
 export interface CategoryGroup {
@@ -15,69 +16,90 @@ export interface CategoryGroup {
   categories: Category[];
 }
 
-const CONTENT_SECTIONS: ReadonlyArray<[string, number]> = [
-  ["Announcements",       10],
-  ["Backgrounds",         33],
-  ["Borders",             12],
-  ["Calls to Action",     34],
-  ["Clients",             16],
-  ["Comparisons",          6],
-  ["Docs",                 6],
-  ["Features",            36],
-  ["Footers",             14],
-  ["Heroes",              73],
-  ["Hooks",               31],
-  ["Images",              26],
-  ["Maps",                 2],
-  ["Navigation Menus",    11],
-  ["Pricing Sections",    17],
-  ["Scroll Areas",        24],
-  ["Shaders",             15],
-  ["Testimonials",        15],
-  ["Texts",               58],
-  ["Videos",               9],
+/* ── Marketing Blocks (from spec) ── */
+const MARKETING_BLOCKS: ReadonlyArray<[string, number, boolean?]> = [
+  ["Announcements",        71],
+  ["ASCII Art",            28, true],
+  ["Backgrounds",         365],
+  ["Borders",             111],
+  ["Calls to Action",     501],
+  ["Clients",              17],
+  ["Comparisons",          31],
+  ["Docks",                49],
+  ["FAQs",                191],
+  ["Features",            318],
+  ["Footers",              65],
+  ["Galleries",           272],
+  ["Gradients",            95, true],
+  ["Heroes",             1152],
+  ["Hooks",                51],
+  ["Images",              428],
+  ["Maps",                 51],
+  ["Marquees",            113],
+  ["Navigation Menus",    477],
+  ["Pricing Sections",    216],
+  ["Scroll Areas",        293],
+  ["Shaders",             118, true],
+  ["Stats & KPIs",        153],
+  ["Steppers",            124],
+  ["Team Sections",       119],
+  ["Testimonials",        161],
+  ["Texts",               663],
+  ["Timelines",            74],
+  ["Videos",              162],
 ];
 
-const UI_COMPONENTS: ReadonlyArray<[string, number]> = [
-  ["Accordions",          40],
-  ["AI Chats",            30],
-  ["Alerts",              23],
-  ["Avatars",             17],
-  ["Badges",              25],
-  ["Buttons",            130],
-  ["Calendars",           34],
-  ["Cards",               79],
-  ["Carousels",           16],
-  ["Checkboxes",          19],
-  ["Date Pickers",        12],
-  ["Dialogs / Modals",    37],
-  ["Dropdowns",           25],
-  ["Empty States",         1],
-  ["File Trees",           2],
-  ["File Uploads",         7],
-  ["Forms",               23],
-  ["Icons",               10],
-  ["Inputs",             102],
-  ["Links",               13],
-  ["Menus",               18],
-  ["Notifications",        5],
-  ["Numbers",             18],
-  ["Paginations",         20],
-  ["Popovers",            23],
-  ["Radio Groups",        22],
-  ["Selects",             62],
-  ["Sidebars",            10],
-  ["Sign Ins",             4],
-  ["Sign Ups",             4],
-  ["Sliders",             45],
-  ["Spinner Loaders",     21],
-  ["Tables",              30],
-  ["Tabs",                38],
-  ["Tags",                 6],
-  ["Text Areas",          22],
-  ["Toasts",               2],
-  ["Toggles",             12],
-  ["Tooltips",            28],
+/* ── UI Components (from spec) ── */
+const UI_COMPONENTS: ReadonlyArray<[string, number, boolean?]> = [
+  ["Accordions",          234],
+  ["AI Chats",            248],
+  ["Alerts",              240],
+  ["Avatars",             597],
+  ["Badges",              605],
+  ["Buttons",            2043],
+  ["Calendars",           239],
+  ["Cards",              1780],
+  ["Carousels",           239],
+  ["Charts & Data Viz",   246],
+  ["Checkboxes",          238],
+  ["Cursors",             152],
+  ["Dashboards",          400],
+  ["Date Pickers",        250],
+  ["Dialogs / Modals",    328],
+  ["Dropdowns",           506],
+  ["Empty States",         77],
+  ["File Trees",           61],
+  ["File Uploads",        154],
+  ["Forms",              1522],
+  ["Globes",               41],
+  ["Grids & Bento",       620],
+  ["Icons",               851],
+  ["Inputs",              949],
+  ["Links",               354],
+  ["Lists",               349],
+  ["Menus",               287],
+  ["Notifications",       247],
+  ["Numbers",              54],
+  ["Onboarding",           53],
+  ["Paginations",         130],
+  ["Popovers",            179],
+  ["Profiles",            270],
+  ["Progress",            375],
+  ["Radio Groups",        152],
+  ["Search Bars",         218],
+  ["Selects",             316],
+  ["Sidebars",             95],
+  ["Sign Ins",            103],
+  ["Sign Ups",             58],
+  ["Sliders",             217],
+  ["Spinner Loaders",     480],
+  ["Tables",              313],
+  ["Tabs",                239],
+  ["Tags",                 74],
+  ["Text Areas",          187],
+  ["Toasts",               79],
+  ["Toggles",             532],
+  ["Tooltips",            267],
 ];
 
 function slugify(name: string): string {
@@ -95,26 +117,26 @@ REGISTRY_COMPONENTS.forEach(c => {
 });
 
 function toCategories(
-  rows: ReadonlyArray<[string, number]>,
+  rows: ReadonlyArray<[string, number, boolean?]>,
   group: CategoryGroupKey,
 ): Category[] {
-  return rows.map(([name, seedCount]) => {
+  return rows.map(([name, seedCount, isNew]) => {
     const slug = slugify(name);
     return {
       slug,
       name,
-      // Use the higher of registry count or seed count to fulfill the "variants" requirement
       count: Math.max(seedCount, REGISTRY_COUNTS[slug] || 0),
       group,
+      isNew: !!isNew,
     };
   });
 }
 
 export const CATEGORY_GROUPS: CategoryGroup[] = [
   {
-    key: "content",
-    label: "Content / Sections",
-    categories: toCategories(CONTENT_SECTIONS, "content"),
+    key: "marketing",
+    label: "Marketing Blocks",
+    categories: toCategories(MARKETING_BLOCKS, "marketing"),
   },
   {
     key: "ui",
@@ -126,6 +148,8 @@ export const CATEGORY_GROUPS: CategoryGroup[] = [
 export const ALL_CATEGORIES: Category[] = CATEGORY_GROUPS.flatMap(
   (g) => g.categories,
 );
+
+export const CATEGORIES = ALL_CATEGORIES;
 
 export const CATEGORY_BY_SLUG: Record<string, Category> = Object.fromEntries(
   ALL_CATEGORIES.map((c) => [c.slug, c]),

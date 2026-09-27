@@ -4,6 +4,7 @@ import App from "./App";
 import { ThemeProvider } from "./lib/theme";
 import { RouterProvider } from "./lib/router";
 import { ToastProvider } from "./components/Toast";
+import { BookmarksProvider } from "./lib/bookmarks";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import "./index.css";
 
@@ -12,9 +13,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <ErrorBoundary>
       <RouterProvider>
         <ThemeProvider>
-          <ToastProvider>
-            <App />
-          </ToastProvider>
+          <BookmarksProvider>
+            <ToastProvider>
+              <App />
+            </ToastProvider>
+          </BookmarksProvider>
         </ThemeProvider>
       </RouterProvider>
     </ErrorBoundary>

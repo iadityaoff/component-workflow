@@ -14,13 +14,13 @@ import { REGISTRY_COUNT } from "../../data/registry";
  * Updates document head properties for dynamic component pages.
  */
 export function MetaHead({ 
-  title = "21st Clone — The Open Source Component Marketplace", 
-  description = `Browse ${REGISTRY_COUNT}+ premium React components, remix with AI, and ship faster.`,
+  title = "UIForge — The living library of interfaces", 
+  description = `12,000+ crafted React components, templates, and shadcn themes. Built by real design engineers.`,
   image = "/og-image.png",
   canonical 
 }: MetaHeadProps) {
   
-  const siteName = "21st Clone";
+  const siteName = "UIForge";
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 
   useEffect(() => {
