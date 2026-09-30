@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase, isBackendConfigured } from "../lib/supabase";
 import { Mail, ArrowRight, Loader2, Code2 } from "lucide-react";
 import { useRoute } from "../lib/router";
 import { Button } from "../components/ui/Button";
@@ -12,6 +12,7 @@ export function SignInPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGithubSignIn = async () => {
+    if (!isBackendConfigured) { setError("Sign-in is unavailable until this project’s account service is configured."); return; }
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
@@ -27,6 +28,7 @@ export function SignInPage() {
 
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isBackendConfigured) { setError("Sign-in is unavailable until this project’s account service is configured."); return; }
     setLoading(true);
     setError(null);
     try {

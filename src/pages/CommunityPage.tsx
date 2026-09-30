@@ -39,17 +39,23 @@ export function CommunityPage({
   viewMode,
   setViewMode,
 }: CommunityPageProps) {
-  const { replaceQuery } = useRoute();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { query, setQuery, navigate } = useRoute();
+  const requestedPage = Math.max(1, Number.parseInt(query.page || "1", 10) || 1);
+  const setCurrentPage = (page: number) => setQuery({ page: page > 1 ? String(page) : "" });
   const itemsPerPage = 24;
 
   // Filter Popover state
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedFramework, setSelectedFramework] = useState<string | null>(null);
-  const [selectedStack, setSelectedStack] = useState<string | null>(null);
-  const [selectedComplexity, setSelectedComplexity] = useState<"all" | "animated" | "interactive" | "static">("all");
-  const [selectedTier, setSelectedTier] = useState<"all" | "featured" | "top-liked" | "top-viewed">("all");
-  const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
+  const selectedFramework = query.framework || null;
+  const setSelectedFramework = (value: string | null) => setQuery({ framework: value || "", page: "" });
+  const selectedStack = query.stack || null;
+  const setSelectedStack = (value: string | null) => setQuery({ stack: value || "", page: "" });
+  const selectedComplexity = ["animated", "interactive", "static"].includes(query.motion) ? query.motion : "all";
+  const setSelectedComplexity = (value: string) => setQuery({ motion: value === "all" ? "" : value, page: "" });
+  const selectedTier = ["featured", "top-liked", "top-viewed"].includes(query.tier) ? query.tier : "all";
+  const setSelectedTier = (value: string) => setQuery({ tier: value === "all" ? "" : value, page: "" });
+  const selectedAuthor = query.author || null;
+  const setSelectedAuthor = (value: string | null) => setQuery({ author: value || "", page: "" });
 
   // Config Popover state
   const [isConfigOpen, setIsConfigOpen] = useState(false);
@@ -94,12 +100,7 @@ export function CommunityPage({
   ].filter(Boolean).length;
 
   const resetAllFilters = () => {
-    setSelectedFramework(null);
-    setSelectedStack(null);
-    setSelectedComplexity("all");
-    setSelectedTier("all");
-    setSelectedAuthor(null);
-    setCurrentPage(1);
+    setQuery({ framework: "", stack: "", motion: "", tier: "", author: "", page: "" });
   };
 
   // Unique list of authors for the filter
@@ -107,10 +108,10 @@ export function CommunityPage({
     const map = new Map<string, string>();
     for (const c of ALL_COMPONENTS) {
       if (c.author?.name) {
-        map.set(c.author.name, c.author.name);
+        map.set(c.author.handle, c.author.handle);
       }
     }
-    return Array.from(map.values()).slice(0, 8);
+    return Array.from(map.values()).sort();
   }, []);
 
   // Filtered components
@@ -129,6 +130,7 @@ export function CommunityPage({
         (c) =>
           c.title.toLowerCase().includes(q) ||
           c.description?.toLowerCase().includes(q) ||
+          c.author.name.toLowerCase().includes(q) || c.author.handle.toLowerCase().includes(q) ||
           c.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
@@ -182,7 +184,7 @@ export function CommunityPage({
 
     // Author filter
     if (selectedAuthor) {
-      result = result.filter((c) => c.author?.name === selectedAuthor);
+      result = result.filter((c) => c.author?.handle === selectedAuthor || c.author?.name === selectedAuthor);
     }
 
     // Sort
@@ -217,7 +219,8 @@ export function CommunityPage({
 
   // Pagination logic
   const totalItems = filteredComponents.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const currentPage = Math.min(requestedPage, totalPages);
 
   const displayedComponents = useMemo(() => {
     if (viewMode === "scroll") return filteredComponents;
@@ -241,7 +244,7 @@ export function CommunityPage({
             {deferredSearch
               ? `Found ${totalItems} results`
               : activeCategory
-              ? `Browse ${activeCategory.count} components.`
+              ? `Browse ${totalItems} components.`
               : `Browse all components.`}
           </p>
         </div>
@@ -310,7 +313,6 @@ export function CommunityPage({
                             type="button"
                             onClick={() => {
                               setSelectedFramework(fw === "All" ? null : fw);
-                              setCurrentPage(1);
                             }}
                             className={`rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
                               isSelected
@@ -339,7 +341,6 @@ export function CommunityPage({
                             type="button"
                             onClick={() => {
                               setSelectedStack(st === "All" ? null : st);
-                              setCurrentPage(1);
                             }}
                             className={`rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
                               isSelected
@@ -373,7 +374,6 @@ export function CommunityPage({
                             type="button"
                             onClick={() => {
                               setSelectedComplexity(t.id as any);
-                              setCurrentPage(1);
                             }}
                             className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs transition cursor-pointer ${
                               isSelected
@@ -408,7 +408,6 @@ export function CommunityPage({
                             type="button"
                             onClick={() => {
                               setSelectedTier(tier.id as any);
-                              setCurrentPage(1);
                             }}
                             className={`rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
                               isSelected
@@ -428,12 +427,11 @@ export function CommunityPage({
                     <span className="font-semibold text-[var(--uf-text-muted)] uppercase tracking-wider text-[10px] block mb-2">
                       Author / Creator
                     </span>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                       <button
                         type="button"
                         onClick={() => {
                           setSelectedAuthor(null);
-                          setCurrentPage(1);
                         }}
                         className={`rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
                           selectedAuthor === null
@@ -451,7 +449,6 @@ export function CommunityPage({
                             type="button"
                             onClick={() => {
                               setSelectedAuthor(author);
-                              setCurrentPage(1);
                             }}
                             className={`rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
                               isSelected
@@ -700,7 +697,7 @@ export function CommunityPage({
                 {activeSlug && (
                   <button
                     type="button"
-                    onClick={() => replaceQuery({ cat: "" })}
+                    onClick={() => navigate("#/components")}
                     className="text-xs font-medium text-[var(--uf-text-muted)] hover:underline cursor-pointer"
                   >
                     Clear category

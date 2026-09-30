@@ -123,7 +123,7 @@ function ContainerGrid({ items, cols, rowCount }: GridCoreProps) {
 
 export function ComponentGrid({ items, isWindowScroll = true, overrideCols }: Props) {
   const responsiveCols = useResponsiveCols({ base: 1, md: 2, lg: 3, xl: 3 });
-  const cols = overrideCols ?? responsiveCols;
+  const cols = Math.min(overrideCols ?? responsiveCols, responsiveCols);
   const rowCount = Math.ceil(items.length / cols);
 
   if (items.length === 0) {

@@ -47,7 +47,7 @@ function toComponentItem(v: VariantSpec): ComponentItem {
     id: v.id,
     title: v.title || "Untitled Component",
     description: v.description || "",
-    categorySlug: v.categorySlug || "buttons",
+    categorySlug: v.categorySlug === "pricing" ? "pricing-sections" : v.categorySlug === "docs" ? "texts" : v.categorySlug || "buttons",
     tags: Array.isArray(v.tags) ? v.tags : [],
     code: v.code || "",
     compiledCode: v.compiledCode,

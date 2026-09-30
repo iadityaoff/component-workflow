@@ -42,6 +42,7 @@ export function Tabs({ active, current, onChange, count, right }: Props) {
 
     if (nextIndex !== index) {
       tabsRef.current[nextIndex]?.focus();
+      onChange(TABS[nextIndex].key);
     }
   }
 

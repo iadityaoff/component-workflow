@@ -10,7 +10,7 @@
  *  - Reduced-motion aware animations
  */
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useId } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Icon } from "./Icon";
@@ -33,6 +33,8 @@ export function Dialog({
   maxWidth = "max-w-lg",
   children,
 }: DialogProps) {
+  const titleId = useId();
+  const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const returnRef = useRef<HTMLElement | null>(null);
 
@@ -115,22 +117,22 @@ export function Dialog({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="dlg-title"
-        aria-describedby={description ? "dlg-desc" : undefined}
+        aria-labelledby={titleId}
+        aria-describedby={description ? descriptionId : undefined}
         className={`relative w-full ${maxWidth} animate-slide-up rounded-2xl border border-ink-200 bg-surface-1 p-6 shadow-2xl dark:border-ink-800`}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2
-              id="dlg-title"
+              id={titleId}
               className="text-lg font-semibold text-ink-950 dark:text-ink-50"
             >
               {title}
             </h2>
             {description && (
               <p
-                id="dlg-desc"
+                id={descriptionId}
                 className="mt-1 text-sm text-ink-600 dark:text-ink-400"
               >
                 {description}

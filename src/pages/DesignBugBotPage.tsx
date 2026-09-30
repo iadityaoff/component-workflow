@@ -12,12 +12,8 @@ export function DesignBugBotPage() {
   const handleScan = (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
-    setScanning(true);
-    setTimeout(() => {
-      setScanning(false);
-      setScanned(true);
-      toast("success", "Scan complete. 3 issues found.");
-    }, 2000);
+    toast("info", "Live scanning is not connected. The example below is a sample report, not an audit of your URL.");
+    setScanned(true);
   };
 
   return (
@@ -33,7 +29,7 @@ export function DesignBugBotPage() {
             Design Bug Bot
           </h1>
           <p className="mt-4 text-[var(--uf-text-secondary)]">
-            AI-powered QA for your UI. Enter your localhost or production URL and we'll flag contrast issues, layout shifts, and inconsistent padding.
+            Explore a sample UI review. Live scanning requires a connected review service.
           </p>
           
           <form onSubmit={handleScan} className="mt-8 flex max-w-xl mx-auto gap-2">

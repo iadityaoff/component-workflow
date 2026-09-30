@@ -2,7 +2,7 @@
  * Publish Component / Resource Flow
  * Meets Section 13 (Publish flow) of Master Prompt
  */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   UploadCloud, CheckCircle, FileCode, Eye, Sparkles, 
   Terminal, Shield, Tag, Layers, Check, ArrowLeft, Video
@@ -59,8 +59,31 @@ export default function Demo() {
   );
 }`);
 
-  // Automatically detect dependencies from import lines
-  const detectedDeps = ["framer-motion", "lucide-react", "clsx", "tailwind-merge"];
+  const detectedDeps = [...new Set(Array.from((componentCode + "\n" + demoCode).matchAll(/from\s+["']([^"']+)["']/g), match => match[1]).filter(name => !name.startsWith(".") && !name.startsWith("@/")))];
+  const saveDraft = () => {
+    try {
+      const draft = { componentName, slug, description, category, tags, license, visibility, componentCode, demoCode, updatedAt: new Date().toISOString() };
+      localStorage.setItem("uiforge-publish-draft", JSON.stringify(draft));
+      toast("success", "Draft saved on this device. It has not been published.");
+    } catch { toast("error", "Could not save draft. Your browser storage may be full."); }
+  };
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("uiforge-publish-draft");
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (typeof draft.componentName === "string") setComponentName(draft.componentName);
+      if (typeof draft.slug === "string") setSlug(draft.slug);
+      if (typeof draft.description === "string") setDescription(draft.description);
+      if (ALL_CATEGORIES.some(c => c.slug === draft.category)) setCategory(draft.category);
+      if (typeof draft.tags === "string") setTags(draft.tags);
+      if (typeof draft.license === "string") setLicense(draft.license);
+      if (["public", "private", "team"].includes(draft.visibility)) setVisibility(draft.visibility);
+      if (typeof draft.componentCode === "string") setComponentCode(draft.componentCode);
+      if (typeof draft.demoCode === "string") setDemoCode(draft.demoCode);
+    } catch { toast("error", "Saved draft could not be read. You can start a new draft."); }
+  }, []);
 
   const handleNameChange = (name: string) => {
     setComponentName(name);
@@ -73,8 +96,7 @@ export default function Demo() {
       toast("error", "Please provide a component name");
       return;
     }
-    toast("success", `Component "${componentName}" submitted for review! Previews captured.`);
-    setTimeout(() => navigate("#/studio"), 1200);
+    toast("error", "Publishing is not connected. Save a local draft while the publishing service is configured.");
   };
 
   return (
@@ -265,6 +287,7 @@ export default function Demo() {
             <span className="text-[10px] font-mono text-emerald-400">Ready</span>
           </div>
 
+          <p role="status" className="text-sm text-[var(--uf-text-secondary)]">Publishing is not connected. You can save a draft on this device.</p>
           {/* Submit Action */}
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -274,6 +297,7 @@ export default function Demo() {
             >
               Cancel
             </button>
+            <button type="button" onClick={saveDraft} className="rounded-xl border border-[var(--uf-border)] px-5 py-2.5 text-xs font-semibold">Save local draft</button>
             <button
               type="submit"
               className="rounded-xl bg-[var(--uf-accent)] px-6 py-2.5 text-xs font-semibold text-white hover:bg-[var(--uf-accent-hover)] transition flex items-center gap-2 shadow-sm"

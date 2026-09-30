@@ -15,6 +15,8 @@ import type { SortKey } from "./components/Tabs";
 import type { ViewMode } from "./components/ViewModeToggle";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 
+const UtilityPage = lazy(() => import("./pages/UtilityPage").then(m => ({ default: m.UtilityPage })));
+
 // Lazy loaded pages
 const CommunityPage = lazy(() => import("./pages/CommunityPage").then((m) => ({ default: m.CommunityPage })));
 const ComponentDetailPage = lazy(() => import("./pages/ComponentDetailPage").then((m) => ({ default: m.ComponentDetailPage })));
@@ -47,11 +49,11 @@ const BookmarksPage = lazy(() => import("./pages/BookmarksPage").then((m) => ({ 
  * The sidebar is always visible and drills down into sub-sections.
  */
 export default function App() {
-  const { route, query, setQuery, replaceQuery } = useRoute();
+  const { route, query, setQuery, replaceQuery, navigate } = useRoute();
 
   // Hydrate states from query
   const activeSlug = query.cat || null;
-  const sort = (query.sort as SortKey) || "featured";
+  const sort: SortKey = ["featured", "popular", "newest"].includes(query.sort) ? query.sort as SortKey : "featured";
   const search = query.q || "";
   const viewMode: ViewMode = query.view === "scroll" ? "scroll" : "page";
 
@@ -59,10 +61,9 @@ export default function App() {
   const debouncedSearch = useDebouncedValue(search, 150);
   const deferredSearch = useDeferredValue(debouncedSearch);
 
-  const setSort = (s: SortKey) => setQuery({ sort: s });
+  const setSort = (s: SortKey) => setQuery({ sort: s, page: "" });
   const setViewMode = (v: ViewMode) => {
-    if (v === "page") replaceQuery({ view: "" });
-    else replaceQuery({ view: v });
+    setQuery({ view: v === "page" ? "" : v, page: "" });
   };
 
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -124,7 +125,10 @@ export default function App() {
 
       <TopBar
         query={search}
-        onQueryChange={(q) => setQuery({ q })}
+        onQueryChange={(q) => {
+          if (["components", "components-featured", "components-newest"].includes(route.page)) setQuery({ q, page: "" });
+          else navigate(`#/components?q=${encodeURIComponent(q)}`);
+        }}
         onOpenMobileNav={() => setNavOpen(true)}
       />
 
@@ -143,8 +147,7 @@ export default function App() {
           <Sidebar
             activeSlug={activeSlug}
             onSelect={(slug) => {
-              if (!slug) replaceQuery({ cat: "" });
-              else replaceQuery({ cat: slug });
+              navigate(slug ? `#/components/s/${slug}` : "#/components");
               setNavOpen(false);
             }}
             open={navOpen}
@@ -220,7 +223,7 @@ export default function App() {
                   viewMode={viewMode}
                   setViewMode={setViewMode}
                 />
-              ) : null}
+              ) : <UtilityPage />}
             </Suspense>
           </ErrorBoundary>
         </main>

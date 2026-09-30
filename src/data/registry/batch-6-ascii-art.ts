@@ -389,20 +389,7 @@ export const ASCII_ART_VARIANTS: VariantSpec[] = [
     views: 29000,
     authorIdx: 3,
     prompt: "Steaming coffee mug with ASCII wavy steam rising.",
-    code: `export function AsciiCoffee() {
-  return (
-    <div className="rounded-xl border border-amber-600/30 bg-stone-950 p-4 font-mono text-amber-300">
-      <pre className="text-[10px] text-center">
-{\`    ( (
-     ) )
-  .______.
-  |      |]
-  \\______/
- \`\`\`\`\`\`\`\`\`\`}
-      </pre>
-    </div>
-  );
-}`,
+    code: "export function AsciiCoffee() {\n  return <pre className=\"rounded-xl border border-white/20 bg-slate-950 p-4 font-mono text-amber-300 text-[10px] text-center\">{\"    ( (\\n     ) )\\n  .______.\\n  |      |]\\n  \\\\______/\\n  --------\"}</pre>;\n}",
   },
   {
     id: "ascii-gameboy-pocket",
@@ -448,20 +435,7 @@ export const ASCII_ART_VARIANTS: VariantSpec[] = [
     views: 42000,
     authorIdx: 5,
     prompt: "Mountain summit landscape with rising sun in clean ASCII linework.",
-    code: `export function AsciiFuji() {
-  return (
-    <div className="rounded-xl border border-orange-500/30 bg-slate-950 p-4 font-mono text-orange-400">
-      <pre className="text-[10px] text-center">
-{\`      (O)
-      /\\
-     /  \\
-    /____\\
-   /      \\
-  /        \\\`}
-      </pre>
-    </div>
-  );
-}`,
+    code: "export function AsciiFuji() {\n  return <pre className=\"rounded-xl border border-white/20 bg-slate-950 p-4 font-mono text-amber-300 text-[10px] text-center\">{\"      (O)\\n      /\\\\\\n     /  \\\\\\n    /____\\\\\\n   /      \\\\\\n  /        \\\\\"}</pre>;\n}",
   },
   {
     id: "ascii-fire-flame-buffer",
@@ -666,20 +640,7 @@ export const ASCII_ART_VARIANTS: VariantSpec[] = [
     views: 41000,
     authorIdx: 3,
     prompt: "Flying saucer alien ship with tractor beam in ASCII art.",
-    code: `export function AsciiUFO() {
-  return (
-    <div className="rounded-xl border border-lime-500/30 bg-slate-950 p-4 font-mono text-lime-400">
-      <pre className="text-[10px] text-center">
-{\`     .---.
-   _/__~0_\\_
-  (_________)
-     /     \\
-    /   o   \\
-   /    |    \\\`}
-      </pre>
-    </div>
-  );
-}`,
+    code: "export function AsciiUFO() {\n  return <pre className=\"rounded-xl border border-white/20 bg-slate-950 p-4 font-mono text-amber-300 text-[10px] text-center\">{\"     .---.\\n   _/__~0_\\\\_\\n  (_________)\\n     /     \\\\\\n    /   o   \\\\\\n   /    |    \\\\\"}</pre>;\n}",
   },
   {
     id: "ascii-compass-rose",

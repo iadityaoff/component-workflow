@@ -1,3 +1,4 @@
+import { normalizeCategory } from "../data/category-aliases";
 /**
  * UIForge Router — Hash-based router with query param manager.
  *
@@ -41,6 +42,7 @@ import {
 
 export interface Route {
   page:
+    | "not-found"
     | "landing"
     | "components"
     | "components-featured"
@@ -75,6 +77,7 @@ export interface Route {
   agentId?: string;
   categorySlug?: string;
   weekId?: string;
+  librarySlug?: string;
 }
 
 interface RouterContext {
@@ -86,7 +89,7 @@ interface RouterContext {
   replaceQuery: (update: Record<string, string>) => void;
 }
 
-function parseHash(hash: string): { route: Route; query: Record<string, string> } {
+export function parseHash(hash: string): { route: Route; query: Record<string, string> } {
   const raw = hash.replace(/^#\/?/, "");
   const [pathPart, queryPart] = raw.split("?");
 
@@ -98,9 +101,10 @@ function parseHash(hash: string): { route: Route; query: Record<string, string> 
     });
   }
 
-  const cleanPath = pathPart.replace(/\/$/, "");
+  const cleanPath = pathPart.replace(/\/$/, "").replace(/^community\//, "");
+  if (query.cat) query.cat = normalizeCategory(query.cat);
 
-  let route: Route = { page: "landing" };
+  let route: Route = { page: "not-found" };
 
   // Component detail
   const detailMatch = cleanPath.match(/^component\/(.+)$/);
@@ -117,12 +121,12 @@ function parseHash(hash: string): { route: Route; query: Record<string, string> 
     route = { page: "detail", componentId: detailMatch[1] };
   } else if (categoryMatch) {
     let slug = categoryMatch[1];
-    if (slug === "button") slug = "buttons";
+    slug = normalizeCategory(slug);
     query.cat = slug;
     route = { page: "components", categorySlug: slug };
   } else if (legacyCategoryMatch) {
     let slug = legacyCategoryMatch[1];
-    if (slug === "button") slug = "buttons";
+    slug = normalizeCategory(slug);
     query.cat = slug;
     route = { page: "components", categorySlug: slug };
   } else if (newestWeekMatch) {
@@ -147,7 +151,7 @@ function parseHash(hash: string): { route: Route; query: Record<string, string> 
     route = { page: "themes" };
   } else if (cleanPath === "apps") {
     route = { page: "apps" };
-  } else if (cleanPath === "icons") {
+  } else if (cleanPath === "icons" || cleanPath === "icons/animated") {
     route = { page: "icons" };
   } else if (cleanPath === "gradients" || cleanPath === "gradients/editor") {
     route = { page: "gradients" };
@@ -155,8 +159,16 @@ function parseHash(hash: string): { route: Route; query: Record<string, string> 
     route = { page: "ascii" };
   } else if (cleanPath === "ai") {
     route = { page: "ai" };
+  } else if (cleanPath.startsWith("@") && !cleanPath.includes("/")) {
+    query.author = decodeURIComponent(cleanPath.slice(1));
+    route = { page: "components" };
+  } else if (cleanPath === "shaders") {
+    query.cat = "shaders";
+    route = { page: "components", categorySlug: "shaders" };
   } else if (cleanPath === "authors") {
     route = { page: "authors" };
+  } else if (cleanPath.startsWith("libraries/")) {
+    route = { page: "libraries", librarySlug: cleanPath.slice("libraries/".length) };
   } else if (cleanPath === "libraries") {
     route = { page: "libraries" };
   } else if (cleanPath === "bookmarks") {
@@ -173,13 +185,13 @@ function parseHash(hash: string): { route: Route; query: Record<string, string> 
     route = { page: "agent-detail", agentId: agentDetailMatch[1] };
   } else if (cleanPath === "agents/publish") {
     route = { page: "agents" };
-  } else if (cleanPath === "magic") {
+  } else if ((cleanPath === "magic" || cleanPath === "magic-chat")) {
     route = { page: "magic" };
   } else if (cleanPath === "publish") {
     route = { page: "publish" };
   } else if (cleanPath === "dashboard") {
     route = { page: "dashboard" };
-  } else if (cleanPath === "signin") {
+  } else if ((cleanPath === "signin" || cleanPath === "sign-in" || cleanPath === "sign-up")) {
     route = { page: "signin" };
   } else if (cleanPath === "mcp") {
     route = { page: "mcp" };

@@ -42,6 +42,7 @@ module.exports = {
 };`;
 
 export function CodePanel({ code, lang, language, onCopy, copied: externalCopied }: Props) {
+  const imports = [...new Set(Array.from(code.matchAll(/from\s+["']([^"']+)["']/g), match => match[1]))];
   const currentLang = lang || language || "tsx";
   const [activeFile, setActiveFile] = useState<"component" | "tailwind">("component");
   const [internalCopied, setInternalCopied] = useState(false);
@@ -147,18 +148,18 @@ export function CodePanel({ code, lang, language, onCopy, copied: externalCopied
       {/* Dependencies footer bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 bg-[#12131c] px-4 py-2.5 text-xs font-sans text-white/60">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-white/80">Peer Dependencies:</span>
+          <span className="font-semibold text-white/80">Source imports:</span>
           <code className="rounded bg-white/10 px-2 py-0.5 text-[11px] font-mono text-emerald-400">
-            framer-motion lucide-react clsx tailwind-merge
+            {imports.length ? imports.join(", ") : "No explicit imports declared"}
           </code>
         </div>
         <button
           type="button"
-          onClick={() => copy("npm install framer-motion lucide-react clsx tailwind-merge", true)}
+          onClick={() => copy(imports.join("\n"), true)}
           className="inline-flex items-center gap-1 rounded-md border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-white/20 transition"
         >
           <Icon icon={copiedDeps ? Check : Copy} size={12} />
-          <span>{copiedDeps ? "Copied command" : "Copy install command"}</span>
+          <span>{copiedDeps ? "Copied imports" : "Copy imports"}</span>
         </button>
       </div>
     </div>

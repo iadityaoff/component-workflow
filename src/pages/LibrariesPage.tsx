@@ -4,6 +4,8 @@
 import React, { useState } from "react";
 import { Search, ExternalLink, Package, Eye, Clock } from "lucide-react";
 import { Icon } from "../components/ui/Icon";
+import { ALL_COMPONENTS } from "../data/components";
+import { ComponentGrid } from "../components/ComponentGrid";
 import { useRoute } from "../lib/router";
 
 interface LibraryData {
@@ -33,7 +35,7 @@ const LIBRARIES: LibraryData[] = [
 
 export function LibrariesPage() {
   const [search, setSearch] = useState("");
-  const { navigate } = useRoute();
+  const { navigate, route } = useRoute();
 
   const filtered = LIBRARIES.filter(
     (l) =>
@@ -41,6 +43,18 @@ export function LibrariesPage() {
       l.handle.toLowerCase().includes(search.toLowerCase())
   );
 
+  if (route.librarySlug) {
+    const library = LIBRARIES.find(lib => lib.slug === route.librarySlug);
+    const handle = library?.handle.replace(/^@/, "");
+    const items = ALL_COMPONENTS.filter(item => item.author.handle === handle);
+    return <section className="mx-auto max-w-6xl p-4 sm:p-8">
+      <a href="#/libraries" className="text-sm underline">All libraries</a>
+      <h1 className="mt-5 text-2xl font-bold">{library?.name || "Library not found"}</h1>
+      <p className="mt-2 text-sm text-[var(--uf-text-secondary)]">{library?.description || "This library is not in the local catalog."}</p>
+      <p className="my-6 text-sm">{items.length} local components attributed to this library. Reference membership has not been verified.</p>
+      <ComponentGrid items={items} />
+    </section>;
+  }
   return (
     <div className="page-enter px-6 py-8 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold text-[var(--uf-text)]">

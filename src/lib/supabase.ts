@@ -6,6 +6,8 @@ import type { ComponentItem } from '../data/components';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
+export const isBackendConfigured = Boolean(supabaseUrl && supabaseKey);
+
 // Force non-null for TS if we know we'll have them in production, 
 // or keep nullable and handle it in hooks.
 // Given the errors, I will keep it non-null but use placeholders to avoid tsc errors in the client.

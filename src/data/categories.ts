@@ -1,4 +1,4 @@
-import { REGISTRY_COMPONENTS } from "./registry/index";
+import { ALL_COMPONENTS } from "./components";
 
 export type CategoryGroupKey = "marketing" | "ui";
 
@@ -112,7 +112,7 @@ function slugify(name: string): string {
 
 // Pre-calculate counts from the registry
 const REGISTRY_COUNTS: Record<string, number> = {};
-REGISTRY_COMPONENTS.forEach(c => {
+ALL_COMPONENTS.forEach(c => {
   REGISTRY_COUNTS[c.categorySlug] = (REGISTRY_COUNTS[c.categorySlug] || 0) + 1;
 });
 
@@ -120,12 +120,12 @@ function toCategories(
   rows: ReadonlyArray<[string, number, boolean?]>,
   group: CategoryGroupKey,
 ): Category[] {
-  return rows.map(([name, seedCount, isNew]) => {
+  return rows.map(([name, , isNew]) => {
     const slug = slugify(name);
     return {
       slug,
       name,
-      count: Math.max(seedCount, REGISTRY_COUNTS[slug] || 0),
+      count: REGISTRY_COUNTS[slug] || 0,
       group,
       isNew: !!isNew,
     };

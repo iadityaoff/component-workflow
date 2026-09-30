@@ -66,9 +66,9 @@ function ComponentCardInner({ item, priority = 0 }: Props) {
           >
             {item.author?.avatarText || "U"}
           </div>
-          <span className="truncate text-xs font-medium text-[var(--uf-text-secondary)] group-hover:text-[var(--uf-text)] transition">
+          <a href={`#/components?author=${encodeURIComponent(item.author.handle)}`} onClick={(e) => e.stopPropagation()} className="truncate text-xs font-medium text-[var(--uf-text-secondary)] hover:underline">
             {item.author?.name || "Anonymous"}
-          </span>
+          </a>
         </div>
 
         <div className="flex items-center gap-1">
@@ -90,6 +90,8 @@ function ComponentCardInner({ item, priority = 0 }: Props) {
               const next = toggleSave(item.id);
               toast(next ? "success" : "info", next ? "Saved" : "Removed");
             }}
+            aria-pressed={saved}
+            aria-label={`${saved ? "Remove bookmark for" : "Bookmark"} ${item.title}`}
             title={saved ? "Remove" : "Save"}
           >
             <Icon icon={Bookmark} size={14} className={saved ? "fill-amber-500" : ""} />
@@ -170,7 +172,7 @@ function ComponentCardInner({ item, priority = 0 }: Props) {
       <div className="flex items-center justify-between px-3 py-2.5">
         <div className="min-w-0 flex-1">
           <h3 className="truncate text-[13px] font-semibold text-[var(--uf-text)]">
-            {item.title}
+            <button type="button" onClick={(e) => { e.stopPropagation(); setQuery({ preview: item.id }); }} className="max-w-full truncate text-left focus-visible:ring-2 focus-visible:ring-violet-500" aria-label={`Preview ${item.title}`}>{item.title}</button>
           </h3>
           <p className="truncate text-[11px] text-[var(--uf-text-muted)]">
             {category?.name || "Component"}

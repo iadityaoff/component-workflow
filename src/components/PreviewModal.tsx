@@ -25,6 +25,7 @@ export function PreviewModal() {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [isRemixOpen, setIsRemixOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
   const similarRef = useRef<HTMLDivElement>(null);
 
   // Find index and prev/next items
@@ -78,6 +79,30 @@ export function PreviewModal() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [item, prevItem, nextItem, themeMode]);
 
+  const open = Boolean(item);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const frame = requestAnimationFrame(() => panelRef.current?.focus());
+    const trap = (event: KeyboardEvent) => {
+      if (event.key !== "Tab") return;
+      const controls = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input, select, textarea, [tabindex="0"]') || []).filter(el => el.getClientRects().length > 0);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (!first) { event.preventDefault(); panelRef.current?.focus(); return; }
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", trap);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", trap);
+      previous?.focus();
+    };
+  }, [open]);
+
   if (!item) return null;
 
   const saved = isSaved(item.id);
@@ -110,7 +135,7 @@ export function PreviewModal() {
         />
 
         {/* Modal Window Container */}
-        <div className="relative z-10 flex flex-col w-full max-w-4xl max-h-[92vh] rounded-2xl border border-[var(--uf-border)] bg-[var(--uf-bg)] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto">
+        <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={`${item.title} preview`} className="relative z-10 flex flex-col w-full max-w-4xl max-h-[92vh] rounded-2xl border border-[var(--uf-border)] bg-[var(--uf-bg)] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto">
           
           {/* Top Bar Outside the Card */}
           <header className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--uf-border)] bg-[var(--uf-panel)] px-4 sm:px-6">
@@ -130,11 +155,11 @@ export function PreviewModal() {
                 </span>
                 {item.author?.handle && (
                   <a
-                    href={`https://x.com/${item.author.handle}`}
+                    href={`https://21st.dev/@${item.author.handle}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-xs text-[var(--uf-text-muted)] hover:text-cyan-400 transition hidden sm:inline"
-                    title={`Follow @${item.author.handle} on X`}
+                    title={`View @${item.author.handle} on 21st`}
                   >
                     𝕏
                   </a>
